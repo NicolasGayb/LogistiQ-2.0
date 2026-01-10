@@ -1,0 +1,34 @@
+# OS & metadata
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+
+# Dependencies & builds
+node_modules/
+packages/
+dist/
+build/
+coverage/
+*.seed
+*.pid
+*.tgz
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+
+# Environment & secrets
+.env*
+!.env.example
+
+# IDEs & tools
+.vscode/
+.idea/
+*.iml
+
+# Git
+*.orig
+!.gitkeep

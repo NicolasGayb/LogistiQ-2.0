@@ -39,8 +39,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const { access_token } = response.data;
 
-    // Store token in local storage
-    localStorage.setItem("token", access_token);
+    // Mobile: Store token in local storage
+    api.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
 
     await loadSession();
   }
