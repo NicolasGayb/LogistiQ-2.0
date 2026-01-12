@@ -23,6 +23,7 @@ __pycache__/
 # Environment & secrets
 .env*
 !.env.example
+.venv*
 
 # IDEs & tools
 .vscode/
@@ -32,3 +33,14 @@ __pycache__/
 # Git
 *.orig
 !.gitkeep
+
+# Database
+*.sqlite3
+*.db
+*.sqlite
+
+# Venvs
+venv/
+env/
+.venv/
+.env/
