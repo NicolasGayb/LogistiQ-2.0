@@ -9,7 +9,7 @@ class Company(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    cnpj: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
+    cnpj: Mapped[str] = mapped_column(String(14), unique=True, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     created_at: Mapped[DateTime] = mapped_column(

@@ -1,11 +1,17 @@
 import uuid
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
 from typing import Optional
+from app.core.validators import normalize_cnpj
 
 
 class CompanyCreate(BaseModel):
     name: str
     cnpj: Optional[str] = None
+
+    @field_validator("cnpj", mode="before")
+    @classmethod
+    def validate_cnpj(cls, value: str) -> str:
+        return normalize_cnpj(value)
 
 class CompanyResponse(BaseModel):
     id: uuid.UUID

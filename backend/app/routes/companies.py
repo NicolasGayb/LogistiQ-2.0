@@ -341,7 +341,7 @@ def deactivate_company(
             detail="Empresa não encontrada"
         )
 
-    company.is_active = data.is_active
+    company.is_active = not company.is_active
     db.commit()
     db.refresh(company)
     return company
