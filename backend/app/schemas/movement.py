@@ -1,6 +1,6 @@
 from uuid import UUID
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from app.models.enum import MovementType, OperationStatus
 
 class MovementBase(BaseModel):
@@ -17,8 +17,8 @@ class MovementResponse(MovementBase):
     company_id: UUID
     created_by: UUID | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
 
 class MovementCreateSchema(BaseModel):
     type: MovementType

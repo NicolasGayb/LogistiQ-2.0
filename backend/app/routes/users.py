@@ -1,3 +1,4 @@
+from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -37,7 +38,7 @@ def list_users(
 
 @router.put("/update-user/{user_id}", response_model=UserResponse)
 def update_user(
-    user_id: int,
+    user_id: UUID,
     data: UserUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(
@@ -68,7 +69,7 @@ def update_user(
 
 @router.delete("/delete-user/{user_id}")
 def delete_user(
-    user_id: int,
+    user_id: UUID,
     db: Session = Depends(get_db),
     current_user: User = Depends(
         require_roles(
@@ -87,7 +88,7 @@ def delete_user(
 
 @router.get("/{user_id}", response_model=UserResponse)
 def get_user(
-    user_id: int,
+    user_id: UUID,
     db: Session = Depends(get_db),
     current_user: User = Depends(
         require_roles(

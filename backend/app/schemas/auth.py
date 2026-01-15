@@ -1,5 +1,5 @@
 import uuid
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from typing import Optional
 from app.models.enum import UserRole
 
@@ -16,12 +16,11 @@ class UserMeResponse(BaseModel):
     name: str
     email: EmailStr
     role: str
-    company_id: Optional[int] = None
+    company_id: Optional[uuid.UUID] = None
     company_name: Optional[str] = None
     is_active: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class SystemAdminCreate(BaseModel):
     name: str

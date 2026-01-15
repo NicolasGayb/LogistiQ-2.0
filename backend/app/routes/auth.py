@@ -8,7 +8,7 @@ from app.database import get_db
 from app.models import User
 from app.schemas.auth import ForgotPasswordRequest, RegisterRequest, ResetPasswordRequest, TokenResponse, UserMeResponse
 from app.core.security import create_access_token, hash_password, verify_password
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, require_roles
 from app.models.enum import UserRole
 from app.models.company import Company
 import secrets
@@ -88,50 +88,90 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 # -----------------------
 # Registro de Usuário
 # -----------------------
-@router.post("/register", response_model=TokenResponse)
-def register(data: RegisterRequest, db: Session = Depends(get_db)):
-    """ 
-    Registra um novo usuário no sistema e retorna um token de acesso.
+@router.post(
+    "/register",
+    response_model=TokenResponse,
+    status_code=status.HTTP_201_CREATED
+)
+def register(
+    data: RegisterRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_roles([UserRole.SYSTEM_ADMIN, UserRole.ADMIN])
+    )
+):
+    # Email duplicado
+    if db.query(User).filter(User.email == data.email).first():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
 
-    Args:
-        data (RegisterRequest): Dados do usuário a ser registrado.
-        db (Session, optional): Sessão do banco de dados. Padrão é Depends(get_db).
-    Returns:
-        TokenResponse: Token de acesso do usuário registrado.
-    Raises:
-        HTTPException: Se o email já estiver registrado ou se a empresa não for encontrada.
-        HTTPException: Se company_cnpj não for fornecido para funções que exigem associação a uma empresa.
-    """
-    try:
-        # Email duplicado
-        if db.query(User).filter(User.email == data.email).first():
+    # Resolver empresa
+    company_id = None
+    company = None
+
+    if data.role != UserRole.SYSTEM_ADMIN:
+        if not data.company_cnpj:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already registered"
+                detail="Company CNPJ is required for this role"
             )
 
-        # Resolver empresa
-        company_id = None
-        if data.role != "SYSTEM_ADMIN":
-            if not data.company_cnpj:
+        company = db.query(Company).filter(
+            Company.cnpj == data.company_cnpj
+        ).first()
+
+        if not company:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Company not found for provided CNPJ"
+            )
+
+        company_id = company.id
+
+    # Autorização por role
+    match current_user.role:
+        case UserRole.SYSTEM_ADMIN:
+            # SYSTEM_ADMIN pode tudo
+            pass
+
+        case UserRole.ADMIN:
+            # ADMIN não pode criar SYSTEM_ADMIN
+            if data.role == UserRole.SYSTEM_ADMIN:
                 raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="company_cnpj is required for this role"
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="ADMIN cannot create SYSTEM_ADMIN users"
                 )
 
-            company = db.query(Company).filter(
-                Company.cnpj == data.company_cnpj
-            ).first()
-
-            if not company:
+            # ADMIN só pode cadastrar usuários da própria empresa
+            if company_id != current_user.company_id:
                 raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Company not found for provided CNPJ"
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="You can only register users for your own company"
                 )
 
-            company_id = company.id
+        case _:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You do not have permission to perform this action"
+            )
 
-        # 👤 Criar usuário
+    # Regra: apenas 1 ADMIN por empresa
+    if data.role == UserRole.ADMIN:
+        existing_admin = db.query(User).filter(
+            User.company_id == company_id,
+            User.role == UserRole.ADMIN
+        ).first()
+
+        if existing_admin:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="An ADMIN user already exists for this company"
+            )
+
+    # Criar usuário
+    try:
         user = User(
             name=data.name,
             email=data.email,
@@ -145,48 +185,14 @@ def register(data: RegisterRequest, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(user)
 
-    except IntegrityError as e:
+    except IntegrityError:
         db.rollback()
-        print("🔥 IntegrityError capturado")
-        print("Tipo do erro:", type(e.orig))
-        print("Erro original:", e.orig)
-
-
-        if isinstance(e.orig, ForeignKeyViolation):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid company: company not found"
-            )
-
-        if isinstance(e.orig, UniqueViolation):
-            if "email" in str(e.orig):
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Email already registered"
-                )
-
-        if isinstance(e.orig, NotNullViolation):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Missing required field"
-            )
-
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Database integrity error"
         )
 
-    except HTTPException:
-        raise
-
-    except Exception:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Unexpected error while creating user"
-        )
-
-    # 🔐 Token (fora do try)
+    # Token
     token = create_access_token(
         subject=str(user.id),
         role=user.role,
@@ -197,6 +203,7 @@ def register(data: RegisterRequest, db: Session = Depends(get_db)):
         access_token=token,
         token_type="bearer"
     )
+
 
 # -----------------------
 # Esqueci minha senha

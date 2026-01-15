@@ -1,6 +1,6 @@
 from typing import Optional
 import uuid
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 class ProductBase(BaseModel):
     name: str = Field(..., max_length=255)
@@ -34,5 +34,4 @@ class ProductOut(ProductBase):
     is_active: bool
     company_id: uuid.UUID
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

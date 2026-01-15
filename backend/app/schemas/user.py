@@ -1,5 +1,5 @@
 import uuid
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr
 from typing import Optional
 from app.models.enum import UserRole
 
@@ -8,21 +8,21 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     role: UserRole
-    company_id: Optional[int] = None
+    company_id: Optional[uuid.UUID] = None
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     role: Optional[UserRole] = None
     email: Optional[EmailStr] = None
-    company_id: Optional[int] = None
+    company_id: Optional[uuid.UUID] = None
 
 class UserResponse(BaseModel):
     id: uuid.UUID
     name: str
     email: EmailStr
     role: UserRole
-    company_id: Optional[int] = None
+    company_id: Optional[uuid.UUID] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
 
