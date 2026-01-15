@@ -1,8 +1,8 @@
 import uuid
-from sqlalchemy import Column, Integer, String, Numeric, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Numeric, Boolean, ForeignKey, func
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
-from app.database import Base
+from app.models.base import Base
 
 
 class Product(Base):
@@ -25,6 +25,24 @@ class Product(Base):
 
     price = Column(Numeric(10, 2), nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
+
+    created_by = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True
+    )
+
+    created_at = Column(
+        String,
+        nullable=False,
+        server_default=func.now()
+    )
+
+    updated_at = Column(
+        String,
+        nullable=True,
+        onupdate=func.now()
+    )
 
     # Relacionamentos
     company = relationship("Company", back_populates="products")

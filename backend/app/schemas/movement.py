@@ -1,0 +1,28 @@
+from uuid import UUID
+from datetime import datetime
+from pydantic import BaseModel
+from app.models.enum import MovementType, OperationStatus
+
+class MovementBase(BaseModel):
+    type: MovementType
+    description: str | None = None
+    previous_status: OperationStatus | None = None
+    new_status: OperationStatus | None = None
+    created_at: datetime
+
+
+class MovementResponse(MovementBase):
+    id: UUID
+    operation_id: UUID
+    company_id: UUID
+    created_by: UUID | None = None
+
+    class Config:
+        from_attributes = True
+
+class MovementCreateSchema(BaseModel):
+    type: MovementType
+    description: str | None = None
+
+class MovementResponseSchema(MovementResponse):
+    pass

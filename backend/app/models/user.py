@@ -3,7 +3,7 @@ from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String, fun
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 from app.models.enum import UserRole
-from app.database import Base
+from app.models.base import Base
 
 class User(Base):
     __tablename__ = "users"

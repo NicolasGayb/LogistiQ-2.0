@@ -3,6 +3,7 @@ from sqlalchemy.orm import sessionmaker, Session, declarative_base
 from typing import Generator
 from dotenv import load_dotenv
 from urllib.parse import quote_plus
+import app.models
 import os
 
 load_dotenv()
