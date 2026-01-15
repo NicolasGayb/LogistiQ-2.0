@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import uuid
 import pytest
 from fastapi.testclient import TestClient
@@ -11,6 +12,7 @@ from app.models.user import User
 from app.models.movement import Movement
 from app.core.security import hash_password as get_password_hash
 from app.models.enum import MovementType, MovementEntityType, OperationStatus
+from app.models.operation import Operation
 
 # -------------------- Banco de teste --------------------
 SQLALCHEMY_TEST_DATABASE_URL = "sqlite:///./test.db"
@@ -159,6 +161,33 @@ def session(create_tables):
         yield db
     finally:
         db.close()
+
+# -------------------- Fixture de criação de operação --------------------
+@pytest.fixture()
+def create_operation(session):
+    operation = Operation(
+        id=uuid.uuid4(),
+        company_id=session.query(Company).filter(Company.name == "Company B").first().id,
+        status=OperationStatus.CREATED,
+        product_id=uuid.uuid4(),
+        updated_at=datetime.utcnow()
+    )
+    session.add(operation)
+    session.commit()
+    return operation
+
+@pytest.fixture()
+def create_operation_other_company(session):
+    operation = Operation(
+        id=uuid.uuid4(),
+        company_id=session.query(Company).filter(Company.name == "Company A").first().id,
+        status=OperationStatus.CREATED,
+        product_id=uuid.uuid4(),
+        updated_at=datetime.utcnow()
+    )
+    session.add(operation)
+    session.commit()
+    return operation
 
 # -------------------- Cliente async para testes --------------------
 @pytest.fixture()
