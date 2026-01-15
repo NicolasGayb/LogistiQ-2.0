@@ -78,6 +78,26 @@ def test_create_company_forbidden_non_system_admin(client, get_token):
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
+def test_create_company_invalid_cnpj(client, get_token):
+    token = get_token("admin@teste.com")
+
+    payload = {
+        "company": {
+            "name": "Empresa Teste",
+            "cnpj": "123"
+        },
+        "admin_name": "Admin",
+        "admin_email": "admin@empresa.com",
+        "admin_password": "123456"
+    }
+
+    response = client.post(
+        "/companies/",
+        json=payload,
+        headers={"Authorization": f"Bearer {token}"}
+    )
+
+    assert response.status_code == 422
 
 # =========================================================
 # GET /companies/me

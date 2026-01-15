@@ -45,10 +45,12 @@ def test_login_nonexistent_user(client):
 # Teste de registro
 # ----------------------
 
-def test_register_user(client, session):
+def test_register_user(client, session, get_token):
     """
     Teste de registro de um novo usuário.
     """
+    token = get_token("admin@teste.com")
+
     payload = {
         "name": "New User",
         "email": "newuser@teste.com",
@@ -59,7 +61,8 @@ def test_register_user(client, session):
 
     response = client.post(
         "/auth/register",
-        json=payload
+        json=payload,
+        headers={"Authorization": f"Bearer {token}"}
     )
 
     # API deve retornar 201 Created
