@@ -1,16 +1,20 @@
-export type UserRole = 'SYSTEM_ADMIN' | 'ADMIN' | 'USER';
+export type UserRole =
+  | 'SYSTEM_ADMIN'
+  | 'ADMIN'
+  | 'MANAGER'
+  | 'USER';
 
-export interface UserMe {
-  id: number;
+export interface User {
+  id: string;
   name: string;
   email: string;
   role: UserRole;
-  company_id: number | null;
-  company_name: string | null;
-  is_active: boolean;
+  companyId: string;
 }
 
 export interface LoginResponse {
   access_token: string;
-  token_type: 'bearer';
+  user: User;
 }
+
+export const __auth_test__ = true;

@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.database import engine
 from app.models.base import Base
@@ -15,6 +16,19 @@ async def lifespan(app: FastAPI):
     # Shutdown code
 
 app = FastAPI(title="LogistiQ 2.0 API", version="1.0.0", description="API do sistema LogistiQ para gestão logística e controle por empresa.", lifespan=lifespan)
+
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(auth.router)
 app.include_router(products.router)

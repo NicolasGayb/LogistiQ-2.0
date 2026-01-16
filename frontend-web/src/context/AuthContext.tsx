@@ -1,9 +1,12 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import api from '../api/client';
-import { UserMe, LoginResponse } from '../types/auth';
+import { __auth_test__ } from '../types/auth';
+console.log('__auth_test__:', __auth_test__);
+import type { User, LoginResponse } from '../types/auth';
+
 
 interface AuthContextData {
-  user: UserMe | null;
+  user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -13,14 +16,14 @@ interface AuthContextData {
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserMe | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   const isAuthenticated = !!user;
 
   async function loadUser() {
     try {
-      const response = await api.get<UserMe>('/auth/me');
+      const response = await api.get<User>('/auth/me');
       setUser(response.data);
     } catch {
       logout();
@@ -30,17 +33,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function login(email: string, password: string) {
-    const params = new URLSearchParams();
-    params.append('username', email);
-    params.append('password', password);
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      params.append('username', email);
+      params.append('password', password);
 
-    const response = await api.post<LoginResponse>(
-      '/auth/login',
-      params
-    );
-
-    localStorage.setItem('access_token', response.data.access_token);
-    await loadUser();
+      const response = await api.post<LoginResponse>(
+        '/auth/login',
+        params,{
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        }
+      );
+    
+      localStorage.setItem('access_token', response.data.access_token);
+      await loadUser();
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   }
 
   function logout() {
