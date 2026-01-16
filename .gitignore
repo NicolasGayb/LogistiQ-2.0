@@ -20,6 +20,19 @@ __pycache__/
 *.egg-info/
 .venv/
 
+# Pytest
+.pytest_cache/
+htmlcov/
+.coverage
+nosetests.xml
+coverage.xml
+*.coverage
+.cache
+
+# Logs
+logs/
+*.log
+
 # Environment & secrets
 .env*
 !.env.example
