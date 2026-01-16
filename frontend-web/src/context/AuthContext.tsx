@@ -1,61 +1,57 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import api from "../api/client";
+import { createContext, useContext, useEffect, useState } from 'react';
+import api from '../api/client';
+import { UserMe, LoginResponse } from '../types/auth';
 
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  role: "ADMIN" | "GESTOR" | "OPERADOR" | "VISUALIZADOR";
-  company_id: string;
-};
-
-type AuthContextData = {
-  user: User | null;
+interface AuthContextData {
+  user: UserMe | null;
   isAuthenticated: boolean;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-};
+}
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<UserMe | null>(null);
   const [loading, setLoading] = useState(true);
 
-  async function loadSession() {
+  const isAuthenticated = !!user;
+
+  async function loadUser() {
     try {
-      const response = await api.get("/users/me");
+      const response = await api.get<UserMe>('/auth/me');
       setUser(response.data);
     } catch {
-      setUser(null);
+      logout();
     } finally {
       setLoading(false);
     }
   }
 
   async function login(email: string, password: string) {
-    const response = await api.post("/auth/login", { email, password });
+    const params = new URLSearchParams();
+    params.append('username', email);
+    params.append('password', password);
 
-    const { access_token } = response.data;
+    const response = await api.post<LoginResponse>(
+      '/auth/login',
+      params
+    );
 
-    // Store token in local storage
-    localStorage.setItem("token", access_token);
-
-    await loadSession();
+    localStorage.setItem('access_token', response.data.access_token);
+    await loadUser();
   }
 
   function logout() {
-    localStorage.removeItem("token");
+    localStorage.removeItem('access_token');
     setUser(null);
   }
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
+    const token = localStorage.getItem('access_token');
     if (token) {
-      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      loadSession();
+      loadUser();
     } else {
       setLoading(false);
     }
@@ -63,19 +59,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        loading,
-        login,
-        logout,
-      }}
+      value={{ user, isAuthenticated, loading, login, logout }}
     >
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
-export function useAuthContext() {
+export function useAuth() {
   return useContext(AuthContext);
 }

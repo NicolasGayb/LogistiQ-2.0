@@ -1,16 +1,31 @@
-import axios from 'axios';
-import { getToken } from '../utils/tokenStorage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const client = axios.create({
-  baseURL: 'https://api.logistiq.com', // ou localhost para dev
-});
+const API_URL = proccess.env.EXPO_PUBLIC_API_URL;
 
-client.interceptors.request.use(config => {
-  const token = getToken();
-  if (token && config.headers) {
-    config.headers['Authorization'] = `Bearer ${token}`;
+export async function apiFetch(
+  url: string,
+  options: RequestInit = {}
+){
+  const token = await AsyncStorage.getItem('access_token');
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...API_URL(options.headers || {}),
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
   }
-  return config;
-});
 
-export default client;
+  const response = await fetch(`${API_URL}${url}`, {
+    ...options,
+    headers,
+  });
+
+  if (response.status === 401) {
+    await AsyncStorage.removeItem('access_token');
+    // navegação para login será tratada no AuthContext
+  }
+
+  return response;
+}
