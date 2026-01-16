@@ -5,14 +5,10 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.main import app
-from app.models.base import Base
 from app.database import get_db
-from app.models.company import Company
-from app.models.user import User
-from app.models.movement import Movement
+from app.models import Company, User, Movement, Operation, Product, Base
 from app.core.security import hash_password as get_password_hash
 from app.models.enum import MovementType, MovementEntityType, OperationStatus
-from app.models.operation import Operation
 
 # -------------------- Banco de teste --------------------
 SQLALCHEMY_TEST_DATABASE_URL = "sqlite:///./test.db"
@@ -158,6 +154,59 @@ def session(create_tables):
         db.add_all(movements)
         db.commit()
 
+        # -------------------- Criação de produtos --------------------
+        products = [
+            # Produtos da Company A
+            Product(
+                id=uuid.uuid4(),
+                company_id=company_a.id,
+                name="Produto A1",
+                sku="A1SKU",
+                price=100.0,
+                description="Produto de teste A1",
+                created_by=users[6].id,
+                is_active=True,
+                created_at=datetime.now(timezone.utc)
+            ),
+            Product(
+                id=uuid.uuid4(),
+                company_id=company_a.id,
+                name="Produto A2",
+                sku="A2SKU",
+                price=150.0,
+                description="Produto de teste A2",
+                created_by=users[6].id,
+                is_active=True,
+                created_at=datetime.now(timezone.utc)
+            ),
+            # Produtos da Company B
+            Product(
+                id=uuid.uuid4(),
+                company_id=company_b.id,
+                name="Produto B1",
+                sku="B1SKU",
+                price=200.0,
+                description="Produto de teste B1",
+                created_by=users[7].id,
+                is_active=True,
+                created_at=datetime.now(timezone.utc)
+            ),
+            Product(
+                id=uuid.uuid4(),
+                company_id=company_b.id,
+                name="Produto B2",
+                sku="B2SKU",
+                price=250.0,
+                description="Produto de teste B2",
+                created_by=users[7].id,
+                is_active=True,
+                created_at=datetime.now(timezone.utc)
+            ),
+        ]
+
+        db.add_all(products)
+        db.commit()
+
         yield db
     finally:
         db.close()
@@ -170,7 +219,8 @@ def create_operation(session):
         company_id=session.query(Company).filter(Company.name == "Company B").first().id,
         status=OperationStatus.CREATED,
         product_id=uuid.uuid4(),
-        updated_at=datetime.utcnow()
+        updated_at=datetime.now(timezone.utc),
+        updated_by=session.query(User).filter(User.email == "d@teste.com").first().id
     )
     session.add(operation)
     session.commit()
@@ -183,7 +233,8 @@ def create_operation_other_company(session):
         company_id=session.query(Company).filter(Company.name == "Company A").first().id,
         status=OperationStatus.CREATED,
         product_id=uuid.uuid4(),
-        updated_at=datetime.utcnow()
+        updated_at=datetime.now(timezone.utc),
+        updated_by=session.query(User).filter(User.email == "e@teste.com").first().id
     )
     session.add(operation)
     session.commit()

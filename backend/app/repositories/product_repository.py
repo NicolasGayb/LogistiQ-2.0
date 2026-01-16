@@ -1,7 +1,7 @@
 import uuid
 from sqlalchemy.orm import Session
 from app.models.product import Product
-import datetime
+from datetime import datetime, timezone
 
 class ProductRepository:
 
@@ -15,7 +15,7 @@ class ProductRepository:
         price: float,
         company_id: uuid.UUID,
         created_by: uuid.UUID | None = None,
-        created_at: datetime.datetime | None = None
+        created_at: datetime | None = None
     ) -> Product:
         product = Product(
             name=name,
@@ -24,7 +24,7 @@ class ProductRepository:
             price=price,
             company_id=company_id,
             created_by=created_by,
-            created_at=created_at or datetime.datetime.utcnow()
+            created_at=created_at or datetime.now(timezone.utc)
         )
 
         db.add(product)

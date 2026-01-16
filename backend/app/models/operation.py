@@ -46,3 +46,8 @@ class Operation(Base):
         DateTime(timezone=True),
         onupdate=func.now()
     )
+
+    updated_by: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("users.id"),
+        nullable=True
+    )

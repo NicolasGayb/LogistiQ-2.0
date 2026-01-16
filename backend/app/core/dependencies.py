@@ -101,3 +101,22 @@ def require_roles(roles: List[UserRole]) -> Callable:
         return current_user
 
     return role_checker
+
+def check_admin_or_manager(
+    current_user: User = Depends(get_current_user)
+) -> User:
+    """
+    Dependência para verificar se o usuário é ADMIN ou MANAGER.
+    Args:
+        current_user (User, optional): Usuário autenticado. Padrão é Depends(get_current_user).
+    Returns:
+        User: Usuário autenticado se for ADMIN ou MANAGER.
+    Raises:
+        HTTPException: Se o usuário não for ADMIN ou MANAGER.
+    """
+    if current_user.role not in {UserRole.ADMIN.value, UserRole.MANAGER.value}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Operation not permitted"
+        )
+    return current_user

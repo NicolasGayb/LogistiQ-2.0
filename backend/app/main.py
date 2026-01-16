@@ -14,7 +14,7 @@ async def lifespan(app: FastAPI):
     yield
     # Shutdown code
 
-app = FastAPI(title="LogistiQ 2.0 API", version="1.0.0", description="API for LogistiQ 2.0 application", lifespan=lifespan)
+app = FastAPI(title="LogistiQ 2.0 API", version="1.0.0", description="API do sistema LogistiQ para gestão logística e controle por empresa.", lifespan=lifespan)
 
 app.include_router(auth.router)
 app.include_router(products.router)

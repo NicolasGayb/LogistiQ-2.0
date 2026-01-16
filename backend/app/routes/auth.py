@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -16,26 +16,60 @@ import secrets
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 # -----------------------
-# Informações do Usuário Autenticado
+# Info: Usuário Autenticado
 # -----------------------
-@router.get("/me", response_model=UserMeResponse)
+@router.get(
+        "/me",
+        summary="Usuário autenticado",
+        description="Retorna as informações do usuário com base no token de autenticação fornecido.\n\n"
+        "O usuário pode ou não estar associado a uma empresa, dependendo do seu papel no sistema.", 
+        response_model=UserMeResponse,
+        responses={
+            200: {
+                "description": "Informações do usuário autenticado",
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "com_empresa": {
+                                "summary": "Usuário associado a uma empresa",
+                                "value": {
+                                    "id": "123e4567-e89b-12d3-a456-426614174000",
+                                    "name": "Marie Doe",
+                                    "email": "marie.doe@example.com",
+                                    "role": "USER",
+                                    "company_id": "123e4567-e89b-12d3-a456-426614174001",
+                                    "company_name": "LogistiQ Corp",
+                                    "is_active": True
+                                }
+                            },
+                            "sem_empresa": {
+                                "summary": "Usuário não associado a uma empresa",
+                                "value": {
+                                    "id": "223e4567-e89b-12d3-a456-426614174000",
+                                    "name": "Admin User",
+                                    "email": "admin.user@example.com",
+                                    "role": "ADMIN",
+                                    "company_id": None,
+                                    "company_name": None,
+                                    "is_active": True
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            401: {
+                "description": "Usuário não autenticado",
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "detail": "Not authenticated"
+                        }
+                    }
+                }
+            }
+        })
 def get_me(current_user: User = Depends(get_current_user)):
-    """
-    Retorna as informações do usuário autenticado.
-
-    Args:
-        current_user (User, optional): Usuário autenticado. Padrão é Depends(get_current_user).
-    Returns:
-        UserMeResponse: Informações do usuário autenticado.
-    Raises:
-        HTTPException: Se o usuário não estiver autenticado.
-    """
-    if not current_user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
 
     return{
         "id": current_user.id,
@@ -51,19 +85,24 @@ def get_me(current_user: User = Depends(get_current_user)):
 # -----------------------
 # Login
 # -----------------------
-@router.post("/login", response_model=TokenResponse)
+@router.post(
+        "/login",
+        summary="Autenticação do usuário",
+        description="Realiza login e retorna um token JWT para autenticação nas demais rotas.",
+        responses={
+            401: {
+                "description": "Credenciais inválidas",
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "detail": "Invalid email or password"
+                        }
+                    }
+                }
+            }
+        },
+        response_model=TokenResponse)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    """
-    Autentica um usuário e retorna um token de acesso.
-    
-    Args:
-        form_data (OAuth2PasswordRequestForm, optional): Dados do formulário de login. Padrão é Depends().
-        db (Session, optional): Sessão do banco de dados. Padrão é Depends(get_db).
-    Returns:
-        TokenResponse: Token de acesso do usuário autenticado.
-    Raises:
-        HTTPException: Se as credenciais forem inválidas.
-    """
     user = (
         db.query(User)
         .filter(User.email == form_data.username, User.is_active == True)
@@ -100,6 +139,18 @@ def register(
         require_roles([UserRole.SYSTEM_ADMIN, UserRole.ADMIN])
     )
 ):
+    """
+    Registra um novo usuário no sistema.
+    
+    Args:
+        data (RegisterRequest): Dados do novo usuário.
+        db (Session, optional): Sessão do banco de dados. Padrão é Depends(get_db).
+        current_user (User, optional): Usuário autenticado realizando o registro. Padrão é Depends(require_roles(...)).
+    Returns:
+        TokenResponse: Token de acesso do novo usuário registrado.
+    Raises:
+        HTTPException: Se houver erros de validação ou autorização.
+   """
     # Email duplicado
     if db.query(User).filter(User.email == data.email).first():
         raise HTTPException(
@@ -236,7 +287,7 @@ def forgot_password(
     token = secrets.token_urlsafe(32)
 
     user.reset_password_token = token
-    user.reset_password_token_expires_at = datetime.utcnow() + timedelta(hours=1)
+    user.reset_password_token_expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
     
     db.commit()
 
@@ -263,7 +314,7 @@ def reset_password(
             detail="Token inválido"
         )
 
-    if not user.reset_password_token_expires_at or user.reset_password_token_expires_at < datetime.utcnow():
+    if not user.reset_password_token_expires_at or user.reset_password_token_expires_at < datetime.now(timezone.utc):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Token expirado"

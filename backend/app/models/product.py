@@ -22,7 +22,7 @@ class Product(Base):
     name = Column(String(120), nullable=False)
     description = Column(String(255), nullable=True)
     sku = Column(String(80), nullable=True, index=True)
-
+    quantity = Column(Integer, default=0, nullable=False)
     price = Column(Numeric(10, 2), nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
 
@@ -42,6 +42,12 @@ class Product(Base):
         String,
         nullable=True,
         onupdate=func.now()
+    )
+
+    updated_by = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True
     )
 
     # Relacionamentos
