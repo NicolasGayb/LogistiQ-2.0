@@ -1,5 +1,7 @@
 # LogistiQ API
 
+Versão do README:v1.0.0
+
 API do sistema **LogistiQ**, uma plataforma de gestão logística com controle de usuários por empresa e autenticação via JWT.
 
 Este repositório contém **todo o ecossistema do LogistiQ**, incluindo:
