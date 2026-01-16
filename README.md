@@ -161,6 +161,14 @@ pytest
 
 ---
 
+🗂️ Versionamento do documento
+
+Este README segue versionamento semântico simples, evoluindo conforme o projeto amadurece.
+
+* v1.0.0 — Estrutura inicial do monorepo, autenticação, roles, isolamento por empresa e fluxos principais documentados.
+
+---
+
 ## 📄 Licença
 
 Projeto desenvolvido para fins educacionais e de portfólio.
