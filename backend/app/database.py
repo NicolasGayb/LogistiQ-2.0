@@ -1,34 +1,17 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session, declarative_base
 from typing import Generator
-from dotenv import load_dotenv
-from urllib.parse import quote_plus
-import app.models
 import os
+from dotenv import load_dotenv
 
 load_dotenv()
 
 # -------------------------
-# Variáveis de ambiente
+# URL do banco (Heroku)
 # -------------------------
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = os.getenv("DB_PORT", "5432")
-DB_NAME = os.getenv("DB_NAME")
-
-if not all([DB_USER, DB_PASSWORD, DB_NAME]):
-    raise ValueError("Database environment variables are not properly set")
-
-# -------------------------
-# Encode da senha (CRÍTICO)
-# -------------------------
-DB_PASSWORD_ENCODED = quote_plus(DB_PASSWORD)
-
-DATABASE_URL = (
-    f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD_ENCODED}"
-    f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-)
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable not set")
 
 # -------------------------
 # Engine
