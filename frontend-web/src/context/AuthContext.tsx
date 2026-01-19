@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import api from '../api/client';
-import { __auth_test__ } from '../types/auth';
-console.log('__auth_test__:', __auth_test__);
-import type { User, LoginResponse } from '../types/auth';
+import type { LoginResponse } from '../types/auth';
+import type { User } from '../types/user';
+import { getMe } from '../services/auth.service';
 
 
 interface AuthContextData {
@@ -19,14 +19,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const isAuthenticated = !!user;
+  const isAuthenticated = !!user && !loading;
 
   async function loadUser() {
     try {
-      const response = await api.get<User>('/auth/me');
-      setUser(response.data);
+      const user = await getMe();
+      setUser(user);
     } catch {
-      logout();
+      localStorage.removeItem('access_token');
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -53,8 +54,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Login error:', error);
       throw error;
-    } finally {
-      setLoading(false);
     }
   }
 

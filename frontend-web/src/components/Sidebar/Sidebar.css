@@ -1,0 +1,87 @@
+/* ===== Sidebar container ===== */
+.sidebar {
+  width: 260px;
+  height: 100vh;
+  background: linear-gradient(
+    180deg,
+    #0f2f25 0%,
+    #0b241d 100%
+  );
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 24px 20px;
+  box-sizing: border-box;
+
+  color: #e6f4f1;
+  position: fixed;
+  left: 0;
+  top: 0;
+}
+
+/* ===== Logo / Title ===== */
+.sidebar-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+
+  color: #4ade80; /* verde LogistiQ */
+
+  margin-bottom: 32px;
+  padding-left: 6px;
+}
+
+/* ===== Menu ===== */
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+/* ===== Menu item ===== */
+.sidebar-item {
+  text-decoration: none;
+  color: #cfe7e2;
+
+  padding: 12px 14px;
+  border-radius: 8px;
+
+  font-size: 0.95rem;
+  font-weight: 500;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+/* Hover elegante */
+.sidebar-item:hover {
+  background-color: rgba(74, 222, 128, 0.08);
+  color: #eafff6;
+}
+
+/* ===== Active ===== */
+.sidebar-item.active {
+  background-color: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+
+  box-shadow: inset 4px 0 0 #4ade80;
+}
+
+/* Pequeno feedback visual */
+.sidebar-item:active {
+  transform: scale(0.98);
+}
+
+/* ===== Footer ===== */
+.sidebar-footer {
+  font-size: 0.75rem;
+  color: #8fbfb3;
+
+  text-align: center;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}

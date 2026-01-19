@@ -1,0 +1,10 @@
+.layout {
+  display: flex;
+}
+
+.layout-content {
+  margin-left: 260px; /* mesma largura da sidebar */
+  width: calc(100% - 260px);
+  min-height: 100vh;
+  background-color: #f7f9f8;
+}

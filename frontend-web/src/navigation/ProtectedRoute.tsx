@@ -1,17 +1,13 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import type { UserRole } from '../constants/roles';
+import { ROLE_HIERARCHY } from '../constants/roles';
+import type { JSX } from 'react';
 
 interface ProtectedRouteProps {
   children: JSX.Element;
-  allowedRoles: Array<'SYSTEM_ADMIN' | 'ADMIN' | 'MANAGER' | 'USER'>;
+  allowedRoles: UserRole[];
 }
-
-const roleHierarchy = {
-  SYSTEM_ADMIN: 4,
-  ADMIN: 3,
-  MANAGER: 2,
-  USER: 1,
-} as const;
 
 export function ProtectedRoute({
   children,
@@ -27,11 +23,10 @@ export function ProtectedRoute({
     return <Navigate to="/login" replace />;
   }
 
-  const userLevel = roleHierarchy[user.role];
-  const allowedLevels = allowedRoles.map((role) => roleHierarchy[role]);
+  const userLevel = ROLE_HIERARCHY[user.role];
 
-  const hasAccess = allowedLevels.some(
-    (level) => userLevel >= level
+  const hasAccess = allowedRoles.some(
+    (role) => userLevel >= ROLE_HIERARCHY[role]
   );
 
   if (!hasAccess) {

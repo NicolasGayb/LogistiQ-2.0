@@ -1,28 +1,24 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { PrivateLayout } from '../layouts/PrivateLayout';
 import { ProtectedRoute } from './ProtectedRoute';
-import AdminDashboard from '../pages/admin/Dashboard';
-import Users from '../pages/admin/Users';
+
+import Dashboard from '../pages/Dashboard/dashboards/AdminDashboard';
 
 export function AdminNavigation() {
   return (
     <Routes>
       <Route
-        path="/"
         element={
           <ProtectedRoute allowedRoles={['ADMIN', 'SYSTEM_ADMIN']}>
-            <AdminDashboard />
+            <PrivateLayout />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route path="/dashboard" element={<Dashboard />} />
 
-      <Route
-        path="/users"
-        element={
-          <ProtectedRoute allowedRoles={['ADMIN', 'SYSTEM_ADMIN']}>
-            <Users />
-          </ProtectedRoute>
-        }
-      />
+        {/* fallback para evitar tela branca */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Route>
     </Routes>
   );
 }
