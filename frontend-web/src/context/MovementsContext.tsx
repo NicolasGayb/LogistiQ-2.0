@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import api from "../api/client";
-import { ENDPOINTS } from "../api/endpoints";
+import { endpoints } from "../api/endpoints";
 
 export interface Movement {
   id: number;
@@ -31,7 +31,7 @@ export function MovementsProvider({
   async function fetchMovements() {
     try {
       setIsLoading(true);
-      const response = await api.get(ENDPOINTS.MOVEMENTS);
+      const response = await api.get(endpoints.movements);
       setMovements(response.data);
     } catch (error) {
       console.error("Erro ao buscar movimentações:", error);

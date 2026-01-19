@@ -1,11 +1,11 @@
-import { useState, FormEvent, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuthContext } from '../../context/AuthContext';
 import styles from './Login.module.css';
 import illustration from './assets/login-illustration.svg';
 
 export default function Login() {
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated } = useAuthContext();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
@@ -19,7 +19,7 @@ export default function Login() {
     }
   }, [isAuthenticated, navigate]);
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);

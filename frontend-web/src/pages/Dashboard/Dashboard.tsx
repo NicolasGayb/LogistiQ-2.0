@@ -1,14 +1,14 @@
-import { useAuth } from '../../context/AuthContext';
+import { useAuthContext } from '../../context/AuthContext';
 import type { UserRole } from '../../constants/roles';
 
-import { SystemAdminDashboard } from './dashboards/SystemAdminDashboard';
-import { AdminDashboard } from './dashboards/AdminDashboard';
-import { ManagerDashboard } from './dashboards/ManagerDashboard';
-import { UserDashboard } from './dashboards/UserDashboard';
+import SystemAdminDashboard from './dashboards/SystemAdminDashboard';
+import AdminDashboard from './dashboards/AdminDashboard';
+import ManagerDashboard from './dashboards/ManagerDashboard';
+import UserDashboard from './dashboards/UserDashboard';
 import type { JSX } from 'react/jsx-dev-runtime';
 
 export function Dashboard() {
-  const { user } = useAuth();
+  const { user } = useAuthContext();
 
   if (!user) return null;
 

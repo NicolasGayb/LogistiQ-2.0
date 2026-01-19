@@ -1,5 +1,4 @@
-// src/components/Header/Header.tsx
-import { useAuth } from '../../context/AuthContext';
+import { useAuthContext } from '../../context/AuthContext';
 import './Header.css';
 import { FaBell, FaUserCircle } from 'react-icons/fa';
 
@@ -8,7 +7,7 @@ interface HeaderProps {
 }
 
 export function Header({ title }: HeaderProps) {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuthContext();
 
   return (
     <header className="header">

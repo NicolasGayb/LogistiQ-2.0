@@ -80,6 +80,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function useAuth() {
+export function useAuthContext() {
   return useContext(AuthContext);
 }

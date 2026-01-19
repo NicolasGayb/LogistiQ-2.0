@@ -1,10 +1,10 @@
 import { NavLink } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuthContext } from '../../context/AuthContext';
 import { menuByRole } from '../../navigation/menuByRole';
 import './Sidebar.css';
 
 export function Sidebar() {
-  const { user } = useAuth();
+  const { user } = useAuthContext();
 
   if (!user) return null;
 

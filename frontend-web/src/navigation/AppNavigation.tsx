@@ -1,5 +1,4 @@
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuthContext } from '../context/AuthContext';
 
 import { PublicNavigation } from './PublicNavigation';
 import { SystemAdminNavigation } from './SystemAdminNavigation';
@@ -9,7 +8,7 @@ import { UserNavigation } from './UserNavigation';
 import Forbidden from '../pages/Forbidden';
 
 export function AppNavigation() {
-  const { user, loading, isAuthenticated } = useAuth();
+  const { user, loading, isAuthenticated } = useAuthContext();
 
   if (loading) {
     return <div>Carregando...</div>;

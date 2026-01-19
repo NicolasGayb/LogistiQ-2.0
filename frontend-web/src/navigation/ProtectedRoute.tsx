@@ -1,5 +1,5 @@
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuthContext } from '../context/AuthContext';
 import type { UserRole } from '../constants/roles';
 import { ROLE_HIERARCHY } from '../constants/roles';
 import type { JSX } from 'react';
@@ -13,7 +13,7 @@ export function ProtectedRoute({
   children,
   allowedRoles,
 }: ProtectedRouteProps) {
-  const { user, loading } = useAuth();
+  const { user, loading } = useAuthContext();
 
   if (loading) {
     return <div>Carregando...</div>;
