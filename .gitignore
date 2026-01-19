@@ -57,3 +57,14 @@ venv/
 env/
 .venv/
 .env/
+
+# Alembic
+alembic/versions/
+alembic.ini
+alembic.env.py
+script.py.mako
+alembic_version
+env.py
+*.pyc
+# Migrations
+migrations/versions/

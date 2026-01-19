@@ -1,12 +1,15 @@
+import email
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
+from httpx import request
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.core.dependencies import require_roles
 from app.models.enum import UserRole
 from app.models import User
 from app.core.security import hash_password
-from app.schemas.user import UserCreate, UserResponse, UserUpdate
+from app.schemas.user import UserCreate, UserRegisterWithToken, UserResponse, UserUpdate
+from app.models.company import Company
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -35,6 +38,76 @@ def list_users(
             User.company_id == current_user.company_id,
             User.role != UserRole.ADMIN
         ).all()
+
+@router.post("/auto-create", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+def auto_create_user(
+    data: UserRegisterWithToken,
+    db: Session = Depends(get_db),
+):
+    # Confere se senhas coincidem
+    if data.password != data.confirm_password:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Senhas não coincidem")
+
+    # Checa email duplicado
+    existing_user = db.query(User).filter(User.email == data.email).first()
+    if existing_user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email já cadastrado")
+
+    # Verifica token da empresa
+    company = db.query(Company).filter(Company.token == data.token).first()
+    if not company:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Token inválido. Entre em contato com o admin da empresa.")
+    
+    # Cria usuário com role USER
+    new_user = User(
+        name=data.name,
+        email=data.email,
+        password_hash=hash_password(data.password),
+        role=UserRole.USER,
+        company_id=company.id
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    message = f"Usuário {new_user.email} criado com sucesso na empresa {company.name}."
+    print(message)
+
+    return new_user
+
+@router.post("/create-user", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+def create_user(
+    data: UserCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles([UserRole.SYSTEM_ADMIN, UserRole.ADMIN]))
+):
+    # ADMIN só pode criar usuários da própria empresa
+    if current_user.role == UserRole.ADMIN:
+        if data.company_id != current_user.company_id:
+            raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Not authorized to create user for this company")
+        if data.role != UserRole.USER:
+            raise HTTPException(status.HTTP_403_FORBIDDEN, detail="ADMIN só pode criar usuários USER")
+
+    # Checa email duplicado
+    existing_user = db.query(User).filter(User.email == data.email).first()
+    if existing_user:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="Email já cadastrado")
+
+    # Cria usuário
+    hashed_password = hash_password(data.password)
+    new_user = User(
+        name=data.name,
+        email=data.email,
+        password_hash=hashed_password,
+        role=data.role,
+        company_id=data.company_id
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return new_user
 
 @router.put("/update-user/{user_id}", response_model=UserResponse)
 def update_user(

@@ -17,6 +17,8 @@ class Company(Base):
         server_default=func.now(),
     )
 
+    token: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+
     products = relationship("Product", back_populates="company", cascade="all, delete-orphan")
 
     users = relationship("User", back_populates="company")

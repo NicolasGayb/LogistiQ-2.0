@@ -7,6 +7,7 @@ from app.core.validators import normalize_cnpj
 class CompanyCreate(BaseModel):
     name: str
     cnpj: Optional[str] = None
+    token: str
 
     @field_validator("cnpj", mode="before")
     @classmethod

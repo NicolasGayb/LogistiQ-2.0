@@ -40,7 +40,7 @@ export default function Login() {
         <img src={illustration} alt="Ilustração LogistiQ" />
         <div className={styles['login-branding-text']}>
           <h1>LogistiQ</h1>
-          <p>Gerencie suas entregas e operações de forma inteligente.</p>
+          <p>Controle, visibilidade e eficiência para suas operações logísticas.</p>
         </div>
       </div>
 
@@ -74,8 +74,17 @@ export default function Login() {
             />
           </div>
 
+          <div className={styles['forgot-password']}>
+            <a href="/forgot-password">Esqueceu sua senha?</a>
+          </div>
+
+          <div className={styles['signup-prompt']}>
+            <span>Não tem uma conta?</span>
+            <a href="/register"> Cadastre-se</a>
+          </div>
+
           <button className={styles['login-button']} type="submit" disabled={loading}>
-            {loading ? 'Entrando...' : 'Entrar'}
+            {loading ? 'Autenticando...' : 'Entrar'}
           </button>
 
           <div className={styles['login-footer']}>

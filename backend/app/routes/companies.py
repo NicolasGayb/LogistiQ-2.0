@@ -1,4 +1,5 @@
 import uuid
+import secrets
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -76,7 +77,8 @@ def create_company(
         # Cria empresa
         company = Company(
             name=data.company.name,
-            cnpj=data.company.cnpj
+            cnpj=data.company.cnpj,
+            token=secrets.token_urlsafe(16)
         )
         db.add(company)
         db.flush()  # pega company.id sem commit
@@ -148,7 +150,9 @@ def get_my_company_users(
     current_user: User = Depends(require_roles([UserRole.ADMIN, UserRole.MANAGER, UserRole.SYSTEM_ADMIN])
     )
 ):
-    """"""
+    """
+    Recupera os usuários da empresa do usuário autenticado.
+    """
     query = db.query(User)
 
     match current_user.role:
@@ -207,6 +211,32 @@ def get_company_by_id(
     """
         
     company = db.query(Company).filter(Company.id == company_id).first()
+    
+    if not company:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Empresa não encontrada"
+        )
+    
+    return company
+
+@router.get("/cnpj/{company_cnpj}", response_model=CompanyResponse)
+def get_company_by_cnpj(
+    company_cnpj: str,
+    db: Session = Depends(get_db),
+) -> Company:
+    """Recupera uma empresa pelo CNPJ.
+    
+    - Lança erro se a empresa não for encontrada.
+    
+    Args:
+        company_cnpj (str): CNPJ da empresa.
+        db (Session): Sessão do banco de dados.
+    Returns:
+        Company: Instância da empresa.
+    """
+        
+    company = db.query(Company).filter(Company.cnpj == company_cnpj).first()
     
     if not company:
         raise HTTPException(

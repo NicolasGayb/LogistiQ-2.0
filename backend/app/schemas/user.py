@@ -10,6 +10,13 @@ class UserCreate(BaseModel):
     role: UserRole
     company_id: Optional[uuid.UUID] = None
 
+class UserRegisterWithToken(BaseModel):
+    name: str
+    email: EmailStr
+    password: str
+    confirm_password: str
+    token: str
+
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     role: Optional[UserRole] = None

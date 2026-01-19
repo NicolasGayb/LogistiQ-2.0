@@ -1,64 +1,91 @@
+/* src/components/Header/Header.css */
 .header {
-  height: 64px;
-  width: 100%;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
-
   display: flex;
-  align-items: center;
   justify-content: space-between;
-
-  padding: 0 24px;
-  box-sizing: border-box;
+  align-items: center;
+  height: 60px;
+  padding: 0 1.5rem;
+  background-color: white;
+  border-bottom: 1px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  font-family: 'Manrope', sans-serif;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 1rem;
+}
+
+.header-logo {
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: #10b981; /* verde LogistiQ */
 }
 
 .header-title {
-  font-size: 18px;
   font-weight: 600;
-  color: #111827;
+  font-size: 1.125rem;
+  color: #374151;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 1rem;
 }
 
-.header-user {
-  display: flex;
-  flex-direction: column;
-  text-align: right;
-}
-
-.header-user-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: #111827;
-}
-
-.header-user-role {
-  font-size: 12px;
-  color: #6b7280;
-}
-
-.header-logout {
+.header-icon-btn {
   background: none;
   border: none;
   cursor: pointer;
-
-  font-size: 14px;
-  font-weight: 500;
-  color: #ef4444;
-
-  transition: opacity 0.2s ease;
+  color: #6b7280;
+  position: relative;
 }
 
-.header-logout:hover {
-  opacity: 0.8;
+.header-user {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.header-username {
+  font-weight: 500;
+  color: #374151;
+}
+
+.header-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  min-width: 120px;
+  margin-top: 0.5rem;
+  flex-direction: column;
+}
+
+.header-user:hover .header-dropdown {
+  display: flex;
+}
+
+.header-dropdown button {
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: #374151;
+}
+
+.header-dropdown button:hover {
+  background-color: #f3f4f6;
 }
