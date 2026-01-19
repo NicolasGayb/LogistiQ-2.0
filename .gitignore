@@ -66,5 +66,6 @@ script.py.mako
 alembic_version
 env.py
 *.pyc
+
 # Migrations
 migrations/versions/
