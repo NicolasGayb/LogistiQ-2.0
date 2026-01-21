@@ -7,7 +7,6 @@ from app.core.validators import normalize_cnpj
 class CompanyCreate(BaseModel):
     name: str
     cnpj: Optional[str] = None
-    token: str
 
     @field_validator("cnpj", mode="before")
     @classmethod
@@ -18,6 +17,7 @@ class CompanyResponse(BaseModel):
     id: uuid.UUID
     name: str
     cnpj: Optional[str]
+    token: str
 
     model_config = ConfigDict(from_attributes=True)
 

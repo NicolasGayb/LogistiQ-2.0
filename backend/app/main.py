@@ -38,7 +38,11 @@ app = FastAPI(
     title="LogistiQ 2.0 API", 
     version="2.0.0", 
     description="API do sistema LogistiQ para gestão logística e controle por empresa.", 
-    lifespan=lifespan
+    lifespan=lifespan,
+
+    docs_url= None if os.getenv("ENV") == "production" else "/docs",
+    redoc_url= None if os.getenv("ENV") == "production" else "/redoc",
+    openapi_url= None if os.getenv("ENV") == "production" else "/openapi.json",
 )
 
 # =================================================================
