@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+const baseURL = "";
+
 const api = axios.create({
-  baseURL: import.meta.env.PROD ? '' : 'http://localhost:8000',
+  baseURL: baseURL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -23,7 +25,10 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('access_token');
-      window.location.href = '/login';
+      // Opcional: só redireciona se não estiver já na tela de login
+      if (!window.location.pathname.includes('/login')) {
+         window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
