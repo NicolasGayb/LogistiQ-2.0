@@ -7,7 +7,6 @@ Thumbs.db
 # Dependencies & builds
 node_modules/
 packages/
-dist/
 build/
 coverage/
 *.seed
