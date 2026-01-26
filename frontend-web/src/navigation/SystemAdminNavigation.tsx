@@ -3,6 +3,7 @@ import { PrivateLayout } from '../layouts/PrivateLayout';
 import { ProtectedRoute } from './ProtectedRoute';
 
 import Dashboard from '../pages/Dashboard/dashboards/SystemAdminDashboard';
+import UsersPage from '../pages/Users/UsersPage';
 
 export function SystemAdminNavigation() {
   return (
@@ -14,6 +15,7 @@ export function SystemAdminNavigation() {
           </ProtectedRoute>
         }
       >
+        <Route path="/users" element={<UsersPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
 
         {/* fallback para evitar tela branca */}

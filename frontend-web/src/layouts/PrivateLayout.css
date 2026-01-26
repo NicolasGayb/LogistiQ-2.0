@@ -1,17 +1,36 @@
-.layout {
-  display: flex;
-  min-height: 100vh;
+/* O Container que segura tudo */
+.layout-container {
+  display: flex;       /* Coloca Sidebar e Main lado a lado */
+  height: 100vh;       /* Ocupa 100% da altura da tela */
+  width: 100%;
+  overflow: hidden;    /* Evita scroll na janela inteira */
+  background-color: #f8fafc; /* Cor de fundo suave */
 }
 
+/* Área do Menu Lateral */
+.layout-sidebar {
+  flex-shrink: 0;      /* Impede o menu de encolher */
+  width: 260px;        /* Largura fixa do menu (ajuste conforme seu Sidebar) */
+  background-color: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Área da Direita (Header + Conteúdo) */
 .layout-main {
-  margin-left: 260px; /* mesma largura da sidebar */
-  width: calc(100% - 260px);
+  flex: 1;             /* Ocupa todo o espaço restante */
+  overflow: hidden;    /* Evita scroll na área principal */
+  height: 100%;
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* Um embaixo do outro (Header em cima, Content embaixo) */
+  min-width: 0;        /* Truque para evitar overflow em flexbox */
 }
 
+/* A Área onde as páginas (Users, Dashboard) são desenhadas */
 .layout-content {
-  padding: 32px;
-  background-color: #f7f9f8;
-  flex: 1;
+  flex: 1;             /* Ocupa a altura restante abaixo do Header */
+  overflow-y: auto;    /* Permite scroll SÓ aqui dentro */
+  overflow-x: hidden;
+  padding: 32px;       /* Espaçamento interno */
 }

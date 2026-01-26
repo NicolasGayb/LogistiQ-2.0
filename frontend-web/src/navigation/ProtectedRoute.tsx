@@ -1,11 +1,11 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthContext } from '../context/AuthContext';
-import type { UserRole } from '../constants/roles';
 import { ROLE_HIERARCHY } from '../constants/roles';
-import type { JSX } from 'react';
+import type { UserRole } from '../constants/roles';
+import type { ReactNode } from 'react';
 
 interface ProtectedRouteProps {
-  children: JSX.Element;
+  children?: ReactNode;
   allowedRoles: UserRole[];
 }
 
@@ -16,7 +16,7 @@ export function ProtectedRoute({
   const { user, loading } = useAuthContext();
 
   if (loading) {
-    return <div>Carregando...</div>;
+    return <div style={{ display: 'flex', justifyContent: 'center', padding: '50px' }}>Carregando sessão...</div>;
   }
 
   if (!user) {
@@ -24,7 +24,6 @@ export function ProtectedRoute({
   }
 
   const userLevel = ROLE_HIERARCHY[user.role];
-
   const hasAccess = allowedRoles.some(
     (role) => userLevel >= ROLE_HIERARCHY[role]
   );
@@ -33,5 +32,7 @@ export function ProtectedRoute({
     return <Navigate to="/forbidden" replace />;
   }
 
-  return children;
+  // Se tiver filho, renderiza ele.
+  // Se não, renderiza Outlet (rota aninhada padrão do v6).
+  return children ? <>{children}</> : <Outlet />;
 }

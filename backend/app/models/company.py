@@ -4,7 +4,20 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 from app.models.base import Base
 
+# Modelo da tabela Company
 class Company(Base):
+    '''Modelo da tabela Company
+    
+    Attributes:
+        id (uuid.UUID): Identificador único da empresa.
+        name (str): Nome da empresa.
+        cnpj (str): CNPJ da empresa.
+        is_active (bool): Indica se a empresa está ativa.
+        created_at (DateTime): Data e hora de criação do registro.
+        token (str): Token único associado à empresa.
+        products (List[Product]): Relação com os produtos da empresa.
+        users (List[User]): Relação com os usuários associados à empresa.
+    '''
     __tablename__ = "companies"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)

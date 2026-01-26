@@ -1,13 +1,33 @@
+# Importações padrão
 import uuid
 from sqlalchemy import String, DateTime, Enum, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
+
+# Importações internas
 from app.models.base import Base
 from app.models.enum import OperationStatus
 
-
+# Definição do modelo Operation
 class Operation(Base):
+    '''Modelo que representa uma operação dentro do sistema.
+    
+    A operação está associada a uma empresa e a um produto, e possui
+    atributos como status, origem, destino, timestamps de criação e atualização,
+    e o usuário que realizou a última atualização.
+    
+    Attributes:
+        id (uuid.UUID): Identificador único da operação.
+        company_id (uuid.UUID): Identificador da empresa associada.
+        product_id (uuid.UUID): Identificador do produto associado.
+        status (OperationStatus): Status atual da operação.
+        origin (str | None): Local de origem da operação.
+        destination (str | None): Local de destino da operação.
+        created_at (str): Timestamp de criação da operação.
+        updated_at (str): Timestamp da última atualização da operação.
+        updated_by (uuid.UUID | None): Identificador do usuário que realizou a última atualização.
+    '''
     __tablename__ = "operations"
 
     id: Mapped[uuid.UUID] = mapped_column(

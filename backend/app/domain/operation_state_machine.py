@@ -1,5 +1,6 @@
 from app.models.operation import OperationStatus
 
+# Define as transições permitidas entre os estados da operação
 ALLOWED_TRANSITIONS: dict[OperationStatus, set[OperationStatus]] = {
     OperationStatus.CREATED: {
         OperationStatus.AT_ORIGIN,

@@ -1,6 +1,9 @@
+# Importações externas
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from uuid import UUID
+
+# Importações internas
 from app.models.enum import UserRole
 from app.database import get_db
 from app.core.dependencies import check_admin_or_manager, get_current_user, require_roles
@@ -10,23 +13,39 @@ from app.services.product_service import ProductService
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
-
-# -------------------- Listagem de produtos --------------------
+# --------------------------------------------------
+# GET products
+# --------------------------------------------------
 @router.get("/")
 def list_products(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    '''Lista todos os produtos associados à empresa do usuário autenticado.
+
+    Parâmetros:
+    - `db`: Sessão do banco de dados.
+    - `current_user`: Usuário autenticado.
+    Retorna:
+    - Lista de produtos da empresa do usuário autenticado.
+    '''
     return ProductService.list_products(db=db, company_id=current_user.company_id)
 
-
-# -------------------- GET por ID --------------------
 @router.get("/{product_id}")
 def get_product(
     product_id: UUID,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    '''Obtém os detalhes de um produto específico.
+
+    Parâmetros:
+    - `product_id`: ID do produto a ser obtido.
+    - `db`: Sessão do banco de dados.
+    - `current_user`: Usuário autenticado.
+    Retorna:
+    - Detalhes do produto solicitado.
+    '''
     try:
         return ProductService.get_by_id(
             db=db, product_id=product_id, company_id=current_user.company_id
@@ -34,8 +53,9 @@ def get_product(
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
-
-# -------------------- Criação de produto --------------------
+# --------------------------------------------------
+# POST products
+# --------------------------------------------------
 @router.post(
         "/",
         status_code=status.HTTP_201_CREATED)
@@ -44,6 +64,15 @@ def create_product(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    '''Cria um novo produto.
+
+    Parâmetros:
+    - `product`: Dados do produto a ser criado.
+    - `db`: Sessão do banco de dados.
+    - `current_user`: Usuário autenticado.
+    Retorna:
+    - O produto criado.
+    '''
     try:
         new_product = ProductService.create_product(
             db=db,
@@ -55,8 +84,9 @@ def create_product(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-
-# -------------------- Atualização de produto --------------------
+# --------------------------------------------------
+# PUT products
+# --------------------------------------------------
 @router.put("/{product_id}")
 def update_product(
     product_id: UUID,
@@ -64,6 +94,15 @@ def update_product(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    '''Atualiza os detalhes de um produto existente.
+    
+    Parâmetros:
+    - `product_id`: ID do produto a ser atualizado.
+    - `product_data`: Dados atualizados do produto.
+    - `db`: Sessão do banco de dados.
+    - `current_user`: Usuário autenticado.
+    Retorna:
+    - O produto atualizado.'''
     try:
         updated_product = ProductService.update_product(
             db=db,
@@ -79,21 +118,27 @@ def update_product(
             raise HTTPException(status_code=400, detail=msg)
         raise HTTPException(status_code=404, detail=msg)
 
-
-# -------------------- Toggle de ativação/desativação --------------------
-from fastapi import Depends
-from app.models.enum import UserRole
-from app.core.dependencies import require_roles
+# --------------------------------------------------
+# PATCH products
+# --------------------------------------------------
 
 @router.patch("/{product_id}/toggle")
 def toggle_product(
     product_id: UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(check_admin_or_manager),
+    current_user: User = Depends(check_admin_or_manager or require_roles([UserRole.SYSTEM_ADMIN]))
 ):
     """
     Ativa ou desativa um produto dependendo do seu estado atual.
-    Apenas ADMIN e MANAGER podem realizar a ação.
+    Apenas ADMIN, MANAGER e SYSTEM_ADMIN podem realizar a ação.
+
+    Parâmetros:
+    - `product_id`: ID do produto a ser ativado/desativado.
+    - `db`: Sessão do banco de dados.
+    - `current_user`: Usuário autenticado.
+
+    Retorna:
+    - O produto atualizado com o novo estado de ativação.
     """
     try:
         # só chega aqui se tiver permissão

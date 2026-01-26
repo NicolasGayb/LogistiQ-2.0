@@ -1,3 +1,4 @@
+# Importações de terceiros
 from fastapi import HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
@@ -5,17 +6,21 @@ from jose import JWTError, jwt
 from uuid import UUID
 from typing import List, Callable
 
+# Importações locais
 from app.core.config import JWT_ALGORITHM, JWT_SECRET_KEY
 from app.database import get_db
 from app.models.user import User
 from app.models.enum import UserRole
 
+# Definição do esquema OAuth2
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
-
+# ---------------------------------------------------
+# Dependências de autenticação e autorização
+# ---------------------------------------------------
 def get_current_user(
     token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db),
+    db: Session = Depends(get_db)
 ) -> User:
     """
     Dependência para obter o usuário autenticado a partir do token JWT.
@@ -75,7 +80,9 @@ def get_current_user(
 
     return user
 
-
+# ---------------------------------------------------
+# Dependências de autorização por papéis
+# ---------------------------------------------------
 def require_roles(roles: List[UserRole]) -> Callable:
     """
     Dependência para verificar se o usuário possui um dos papéis permitidos.
@@ -102,6 +109,9 @@ def require_roles(roles: List[UserRole]) -> Callable:
 
     return role_checker
 
+# ---------------------------------------------------
+# Dependência específica para ADMIN ou MANAGER
+# ---------------------------------------------------
 def check_admin_or_manager(
     current_user: User = Depends(get_current_user)
 ) -> User:

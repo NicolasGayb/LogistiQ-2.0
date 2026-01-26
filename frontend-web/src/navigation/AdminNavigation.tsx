@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { PrivateLayout } from '../layouts/PrivateLayout';
 import { ProtectedRoute } from './ProtectedRoute';
+import UsersPage from '../pages/Users/UsersPage';
 
 import Dashboard from '../pages/Dashboard/dashboards/AdminDashboard';
 
@@ -15,6 +16,7 @@ export function AdminNavigation() {
         }
       >
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/users" element={<UsersPage />} />
 
         {/* fallback para evitar tela branca */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

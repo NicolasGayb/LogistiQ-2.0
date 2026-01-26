@@ -1,9 +1,12 @@
+# Importações padrão
+import secrets
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError, DataError
-from psycopg2.errors import UniqueViolation, ForeignKeyViolation, NotNullViolation
+from sqlalchemy.exc import IntegrityError
+
+# Importações locais
 from app.database import get_db
 from app.models import User
 from app.schemas.auth import ForgotPasswordRequest, RegisterRequest, ResetPasswordRequest, TokenResponse, UserMeResponse
@@ -11,8 +14,8 @@ from app.core.security import create_access_token, hash_password, verify_passwor
 from app.core.dependencies import get_current_user, require_roles
 from app.models.enum import UserRole
 from app.models.company import Company
-import secrets
 
+# Definição do roteador
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 # -----------------------
@@ -129,6 +132,41 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 # -----------------------
 @router.post(
     "/register",
+    summary="Registro de novo usuário",
+    description="Registra um novo usuário no sistema. Apenas usuários com papéis SYSTEM_ADMIN ou ADMIN podem registrar novos usuários.",
+    responses={
+        201: {
+            "description": "Usuário registrado com sucesso",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                        "token_type": "bearer"
+                    }
+                }
+            }
+        },
+        400: {
+            "description": "Erro de validação",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "Email already registered"
+                    }
+                }
+            }
+        },
+        403: {
+            "description": "Permissão negada",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "You do not have permission to perform this action"
+                    }
+                }
+            }
+        }
+    },
     response_model=TokenResponse,
     status_code=status.HTTP_201_CREATED
 )
@@ -139,18 +177,6 @@ def register(
         require_roles([UserRole.SYSTEM_ADMIN, UserRole.ADMIN])
     )
 ):
-    """
-    Registra um novo usuário no sistema.
-    
-    Args:
-        data (RegisterRequest): Dados do novo usuário.
-        db (Session, optional): Sessão do banco de dados. Padrão é Depends(get_db).
-        current_user (User, optional): Usuário autenticado realizando o registro. Padrão é Depends(require_roles(...)).
-    Returns:
-        TokenResponse: Token de acesso do novo usuário registrado.
-    Raises:
-        HTTPException: Se houver erros de validação ou autorização.
-   """
     # Email duplicado
     if db.query(User).filter(User.email == data.email).first():
         raise HTTPException(
@@ -259,23 +285,41 @@ def register(
 # -----------------------
 # Esqueci minha senha
 # -----------------------
-@router.post("/forgot-password")
+@router.post(
+    "/forgot-password",
+    status_code=status.HTTP_200_OK,
+    summary="Esqueci minha senha",
+    description="Gera um token de redefinição de senha para o usuário com o email fornecido.",
+    responses={
+        200: {
+            "description": "Token de redefinição gerado com sucesso",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "message": "Redefinition token generated.",
+                        "reset_token": "generated_reset_token_here"
+                    }
+                }
+            }
+        },
+        404: {
+            "description": "Usuário não encontrado",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "If the user exists, a password reset email has been sent."
+                    }
+                }
+            }
+        }
+    }
+    status_code=status.HTTP_200_OK,
+    response_model=dict
+)
 def forgot_password(
     data: ForgotPasswordRequest,
     db: Session = Depends(get_db)
 ):
-    """
-    Inicia o processo de recuperação de senha para um usuário.
-
-    Args:
-        data (ForgotPasswordRequest): Dados do pedido de recuperação de senha.
-        db (Session, optional): Sessão do banco de dados. Padrão é Depends(get_db).
-    Returns:
-        dict: Mensagem indicando que o token de redefinição foi gerado.
-    Raises:
-        HTTPException: Se o usuário não for encontrado.
-    """
-
     user = db.query(User).filter(User.email == data.email).first()
 
     if not user:
@@ -292,14 +336,51 @@ def forgot_password(
     db.commit()
 
     return{
-        "message": "Redefinition token generated. (In a real application, an email would be sent to the user with this token.)",
+        "message": "Redefinition token generated.",
         "reset_token": token
     }
 
 # -----------------------
-# Redefinir senha
+# Redefinição de senha
 # -----------------------
-@router.post("/reset-password")
+@router.post(
+        "/reset-password", 
+        status_code=status.HTTP_200_OK,
+        summary="Redefinição de senha",
+        description="Redefine a senha do usuário utilizando um token de redefinição válido.",
+        responses={
+            400: {
+                "description": "Token inválido ou expirado",
+                "content": {
+                    "application/json": {
+                        "examples": {
+                            "invalid_token": {
+                                "summary": "Token inválido",
+                                "value": {
+                                    "detail": "Token inválido"
+                                }
+                            },
+                            "expired_token": {
+                                "summary": "Token expirado",
+                                "value": {
+                                    "detail": "Token expirado"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            200: {
+                "description": "Senha redefinida com sucesso",
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "message": "Senha redefinida com sucesso"
+                        }
+                    }
+                }
+            }
+        })
 def reset_password(
     data: ResetPasswordRequest,
     db: Session = Depends(get_db)

@@ -1,12 +1,17 @@
+# Importações padrão
 import uuid
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from typing import Optional
+
+# Importação interna
 from app.models.enum import UserRole
 
+# Esquemas de autenticação
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
 
+# Esquema de resposta do token JWT
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
@@ -19,6 +24,7 @@ class TokenResponse(BaseModel):
             }
         }
 
+# Esquema de resposta do usuário autenticado
 class UserMeResponse(BaseModel):
     id: uuid.UUID
     name: str
@@ -29,7 +35,7 @@ class UserMeResponse(BaseModel):
     is_active: bool
 
     class Config:
-        ConfigDict(from_attributes=True)
+        model_config = ConfigDict(from_attributes=True)
         json_schema_extra = {
             "example": {
                 "id": "123e4567-e89b-12d3-a456-426614174000",
@@ -42,11 +48,13 @@ class UserMeResponse(BaseModel):
             }
         }
 
+# Esquema para criação de usuários System Admin
 class SystemAdminCreate(BaseModel):
     name: str
     email: EmailStr
     password: str
 
+# Esquema para registro de novos usuários
 class RegisterRequest(BaseModel):
     name: str
     email: EmailStr
@@ -54,6 +62,7 @@ class RegisterRequest(BaseModel):
     role: UserRole
     company_cnpj: Optional[str] = None
 
+# Esquemas para recuperação e redefinição de senha
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 

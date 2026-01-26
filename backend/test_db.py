@@ -1,16 +1,24 @@
-import psycopg2
-import os
-from dotenv import load_dotenv
+from sqlalchemy import create_engine, text
+from sqlalchemy.exc import OperationalError
 
-load_dotenv()
+# Substitua pela sua URL de conexão real (a mesma do seu .env)
+DATABASE_URL = "postgresql://postgres:Zerinhomilgrau003@localhost:5432/logistiq"
 
-conn = psycopg2.connect(
-    dbname=os.getenv("DB_NAME"),
-    user=os.getenv("DB_USER"),
-    password=os.getenv("DB_PASSWORD"),
-    host=os.getenv("DB_HOST"),
-    port=os.getenv("DB_PORT"),
-)
+def test_connection():
+    try:
+        # Cria a "engine" (o motor de conexão)
+        engine = create_engine(DATABASE_URL)
+        
+        # Tenta conectar e executar um comando simples
+        with engine.connect() as connection:
+            result = connection.execute(text("SELECT 1"))
+            print("✅ Conexão bem-sucedida! O banco respondeu:", result.scalar())
+            
+    except OperationalError as e:
+        print("❌ Erro de conexão. Verifique senha, porta ou host.")
+        print(f"Detalhes: {e}")
+    except Exception as e:
+        print(f"❌ Erro inesperado: {e}")
 
-print("Conectado com psycopg2 com sucesso")
-conn.close()
+if __name__ == "__main__":
+    test_connection()

@@ -1,6 +1,9 @@
+# Importações externas
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 from uuid import UUID
+
+# Importações internas
 from app.schemas.movement import MovementResponseSchema, MovementCreateSchema
 from app.database import get_db
 from app.models.base import Base
@@ -17,6 +20,18 @@ def list_movements(
     db: Session = Depends(get_db),
     user = Depends(get_current_user)
 ):
+    '''Lista todos os movimentos associados a uma operação específica.
+    
+    - Requer autenticação do usuário.
+    - Filtra movimentos pela empresa do usuário autenticado.
+    
+    Args:
+        entity_id (UUID): ID da operação cujos movimentos serão listados.
+        db (Session): Sessão do banco de dados.
+        user: Usuário autenticado.
+    Returns:
+        list[Movement]: Lista de movimentos associados à operação.
+    '''
     movements = (
         db.query(Movement)
         .filter(
@@ -36,6 +51,18 @@ def create_manual_movement(
     db: Session = Depends(get_db),
     user = Depends(get_current_user)
 ):
+    '''Cria um movimento manual para uma operação específica.
+
+    - Requer autenticação do usuário.
+    - Associa o movimento à empresa do usuário autenticado.
+    Args:
+        entity_id (UUID): ID da operação para a qual o movimento será criado.
+        data (MovementCreateSchema): Dados do movimento a ser criado.
+        db (Session): Sessão do banco de dados.
+        user: Usuário autenticado.
+    Returns:
+        Movement: Instância do movimento criado.
+    '''
     return MovementService.create_manual(
         db=db,
         entity_id=entity_id,

@@ -1,11 +1,32 @@
+# Importações padrão
 import uuid
 from sqlalchemy import Column, Integer, String, Numeric, Boolean, ForeignKey, func
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
+
+# Importação local
 from app.models.base import Base
 
-
+# Definição do modelo Product
 class Product(Base):
+    '''Modelo que representa um produto dentro do sistema.
+    
+    Atributos:
+        id (UUID): Identificador único do produto.
+        company_id (UUID): Identificador da empresa proprietária do produto.
+        name (str): Nome do produto.
+        description (str): Descrição do produto.
+        sku (str): Código SKU do produto.
+        quantity (int): Quantidade disponível do produto.
+        price (Decimal): Preço do produto.
+        is_active (bool): Indica se o produto está ativo.
+        created_by (UUID): Identificador do usuário que criou o produto.
+        created_at (datetime): Data e hora de criação do produto.
+        updated_at (datetime): Data e hora da última atualização do produto.
+        updated_by (UUID): Identificador do usuário que atualizou o produto pela última vez.
+    Relações:
+        company (Company): Empresa proprietária do produto.
+    '''
     __tablename__ = "products"
 
     id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)

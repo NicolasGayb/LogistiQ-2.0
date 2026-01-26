@@ -3,7 +3,7 @@ import secrets
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.schemas.company import CompanyNameUpdate, CompanyWithAdminCreate, CompanyResponse
+from app.schemas.company import CompanyNameUpdate, CompanyWithAdminCreate, CompanyResponse, DashboardStatsResponse
 from app.models.enum import UserRole
 from app.models import Company, User
 from app.database import get_db
@@ -16,7 +16,15 @@ router = APIRouter(prefix="/companies", tags=["Companies"])
 # POST Companies
 # ------------------------
 @router.post(
-    "/", 
+    "/",
+    summary="Cria uma nova empresa com um usuário administrador.",
+    description="Cria uma nova empresa e um usuário administrador associado a ela.",
+    responses={
+        201: {"model": CompanyResponse, "description": "Empresa criada com sucesso."},
+        400: {"description": "Requisição inválida ou empresa já existe."},
+        403: {"description": "Permissão negada."},
+        500: {"description": "Erro interno do servidor ao criar empresa."}
+    },
     response_model=CompanyResponse, 
     status_code=status.HTTP_201_CREATED
 )
@@ -25,20 +33,6 @@ def create_company(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles([UserRole.SYSTEM_ADMIN]))
 ):
-    """Cria uma nova empresa com um usuário administrador associado.
-    
-    - Requer permissão de SYSTEM_ADMIN.
-    - Valida se a empresa já existe.
-    - Valida se o email do administrador já está em uso.
-    - Cria a empresa e o usuário administrador.
-    
-    Args:
-        data (CompanyWithAdminCreate): Dados da empresa e do administrador.
-        db (Session): Sessão do banco de dados.
-        current_user (User): Usuário autenticado.    
-    Returns:
-        CompanyResponse: Dados da empresa criada.
-    """
     # Valida empresa duplicada pelo nome
     existing_company = db.query(Company).filter(
         Company.name == data.company.name
@@ -152,6 +146,14 @@ def get_my_company_users(
 ):
     """
     Recupera os usuários da empresa do usuário autenticado.
+
+    - Requer permissão de ADMIN, MANAGER ou SYSTEM_ADMIN.
+    - Lança erro se o usuário não tiver permissão.
+    Args:
+        db (Session): Sessão do banco de dados.
+        current_user (User): Usuário autenticado.
+    Returns:
+        list[User]: Lista de instâncias de usuários.
     """
     query = db.query(User)
 
@@ -191,13 +193,43 @@ def list_companies(
     companies = db.query(Company).all()
     return companies
 
+@router.get("/stats", response_model=DashboardStatsResponse)
+def get_dashboard_stats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles([UserRole.SYSTEM_ADMIN]))
+) -> DashboardStatsResponse:
+    '''Recupera estatísticas do dashboard.
+    
+    - Requer permissão de SYSTEM_ADMIN.
+    
+    Args:
+        db (Session): Sessão do banco de dados.
+        current_user (User): Usuário autenticado.
+    Returns:
+        DashboardStatsResponse: Estatísticas do dashboard.
+    '''
+    
+    # 1. Faz a contagem no banco
+    count_companies = db.query(Company).count()
+    count_users = db.query(User).count()
+    
+    # 2. Define o status (pode evoluir essa lógica depois)
+    status_msg = "Operacional"
+
+    # 3. Retorna usando os nomes exatos do Schema
+    return DashboardStatsResponse(
+        companies_count=count_companies,
+        users_count=count_users,
+        system_status=status_msg
+    )
+
 @router.get("/{company_id}", response_model=CompanyResponse)
 def get_company_by_id(
     company_id: uuid.UUID,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles([UserRole.SYSTEM_ADMIN]))
 ) -> Company:
-    """Recupera uma empresa pelo ID.
+    '''Recupera uma empresa pelo ID.
     
     - Requer permissão de SYSTEM_ADMIN.
     - Lança erro se a empresa não for encontrada.
@@ -208,7 +240,7 @@ def get_company_by_id(
         current_user (User): Usuário autenticado.
     Returns:
         Company: Instância da empresa.
-    """
+    '''
         
     company = db.query(Company).filter(Company.id == company_id).first()
     
@@ -225,7 +257,7 @@ def get_company_by_cnpj(
     company_cnpj: str,
     db: Session = Depends(get_db),
 ) -> Company:
-    """Recupera uma empresa pelo CNPJ.
+    '''Recupera uma empresa pelo CNPJ.
     
     - Lança erro se a empresa não for encontrada.
     
@@ -234,7 +266,7 @@ def get_company_by_cnpj(
         db (Session): Sessão do banco de dados.
     Returns:
         Company: Instância da empresa.
-    """
+    '''
         
     company = db.query(Company).filter(Company.cnpj == company_cnpj).first()
     
@@ -255,7 +287,7 @@ def update_my_company(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles([UserRole.ADMIN, UserRole.SYSTEM_ADMIN]))
 ) -> Company:
-    """Atualiza os dados da empresa do usuário autenticado.
+    '''Atualiza os dados da empresa do usuário autenticado.
     
     - Requer permissão de ADMIN ou SYSTEM_ADMIN.
     - Lança erro se a empresa não for encontrada.
@@ -266,7 +298,7 @@ def update_my_company(
         current_user (User): Usuário autenticado.
     Returns:
         Company: Instância da empresa atualizada.
-    """
+    '''
     
     company = db.query(Company).filter(Company.id == current_user.company_id).first()
 
@@ -304,7 +336,7 @@ def update_company(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles([UserRole.SYSTEM_ADMIN]))
 ) -> Company:
-    """Atualiza os dados de uma empresa existente.
+    '''Atualiza os dados de uma empresa existente.
     
     - Requer permissão de SYSTEM_ADMIN.
     - Lança erro se a empresa não for encontrada.
@@ -316,7 +348,7 @@ def update_company(
         current_user (User): Usuário autenticado.
     Returns:
         Company: Instância da empresa atualizada.
-    """
+    '''
     company = db.query(Company).filter(Company.id == company_id).first()
 
     if not company:
@@ -352,7 +384,7 @@ def deactivate_company(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles([UserRole.SYSTEM_ADMIN]))
 ):
-    """Desativa uma empresa pelo ID.
+    '''Desativa uma empresa pelo ID.
     
     - Requer permissão de SYSTEM_ADMIN.
     - Lança erro se a empresa não for encontrada.
@@ -361,8 +393,7 @@ def deactivate_company(
         company_id (uuid.UUID): ID da empresa a ser desativada.
         db (Session): Sessão do banco de dados.
         current_user (User): Usuário autenticado.
-    """
-
+    '''
     company = db.query(Company).filter(Company.id == company_id).first()
 
     if not company:
@@ -385,7 +416,7 @@ def delete_company(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles([UserRole.SYSTEM_ADMIN]))
 ):
-    """Deleta uma empresa pelo ID.
+    '''Deleta uma empresa pelo ID.
     
     - Requer permissão de SYSTEM_ADMIN.
     - Lança erro se a empresa não for encontrada.
@@ -394,7 +425,7 @@ def delete_company(
         company_id (uuid.UUID): ID da empresa a ser deletada.
         db (Session): Sessão do banco de dados.
         current_user (User): Usuário autenticado.
-    """
+    '''
 
     company = db.query(Company).filter(Company.id == company_id).first()
 

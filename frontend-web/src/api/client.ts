@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const baseURL = "";
+// Lógica para decidir quem chamar
+const baseURL = 'http://localhost:8000';
 
 const api = axios.create({
   baseURL: baseURL,

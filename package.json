@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@tanstack/react-query": "^5.90.16",
-    "git": "^0.1.5"
+    "git": "^0.1.5",
+    "lucide-react": "^0.562.0"
   }
 }

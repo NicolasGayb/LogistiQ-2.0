@@ -4,10 +4,11 @@ from typing import Generator
 import os
 from dotenv import load_dotenv
 
+# Carregar variáveis de ambiente do arquivo .env
 load_dotenv()
 
 # -------------------------
-# URL do banco (Heroku)
+# URL do banco
 # -------------------------
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:

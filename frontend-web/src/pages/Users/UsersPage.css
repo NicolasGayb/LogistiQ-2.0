@@ -1,0 +1,79 @@
+/* Container */
+.page-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1200px;
+  width: 100%;
+}
+
+.fade-in { animation: fadeIn 0.4s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
+
+/* Header */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.page-title { font-size: 1.8rem; color: #1e293b; margin: 0; font-weight: 700; }
+.page-subtitle { color: #64748b; margin-top: 4px; font-size: 0.95rem; }
+
+/* Search */
+.search-box { position: relative; max-width: 320px; width: 100%; }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+.search-box input {
+  width: 100%; padding: 10px 12px 10px 40px;
+  border: 1px solid #e2e8f0; border-radius: 8px;
+  outline: none; transition: all 0.2s;
+}
+.search-box input:focus { border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1); }
+
+/* Table */
+.table-card { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; text-align: left; white-space: nowrap; }
+.data-table th {
+  padding: 16px 24px; background: #f8fafc; color: #64748b;
+  font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.data-table td { padding: 16px 24px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+.data-table tr:hover td { background: #fcfdfc; }
+
+/* User Info */
+.user-info { display: flex; align-items: center; gap: 12px; }
+.user-avatar {
+  width: 36px; height: 36px; background: #e2e8f0; color: #64748b;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+}
+.user-name { display: block; font-weight: 600; color: #1e293b; font-size: 0.95rem; }
+.user-email { display: block; font-size: 0.8rem; color: #94a3b8; }
+
+/* Badges */
+.badge { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+.badge-purple { background: #f3e8ff; color: #7e22ce; }
+.badge-blue { background: #dbeafe; color: #1d4ed8; }
+.badge-orange { background: #ffedd5; color: #c2410c; }
+.badge-gray { background: #f1f5f9; color: #475569; }
+
+/* Company Info */
+.company-info { display: flex; align-items: center; gap: 8px; color: #475569; font-size: 0.9rem; }
+
+/* Status */
+.status-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.8rem; font-weight: 500; padding: 4px 8px; border-radius: 99px;
+}
+.status-badge.active { background: #dcfce7; color: #15803d; }
+.status-badge.inactive { background: #f1f5f9; color: #64748b; }
+
+/* Actions */
+.action-btn {
+  background: none; border: none; cursor: pointer; color: #94a3b8;
+  padding: 6px; border-radius: 4px; transition: all 0.2s;
+}
+.action-btn:hover { background: #f1f5f9; color: #1e293b; }
+
+.loading-state, .empty-state { padding: 48px; text-align: center; color: #94a3b8; }
