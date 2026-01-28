@@ -285,36 +285,10 @@ def register(
 # -----------------------
 # Esqueci minha senha
 # -----------------------
-@router.post(
-    "/forgot-password",
+@router.post('/forgot-password',
     status_code=status.HTTP_200_OK,
     summary="Esqueci minha senha",
     description="Gera um token de redefinição de senha para o usuário com o email fornecido.",
-    responses={
-        200: {
-            "description": "Token de redefinição gerado com sucesso",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "message": "Redefinition token generated.",
-                        "reset_token": "generated_reset_token_here"
-                    }
-                }
-            }
-        },
-        404: {
-            "description": "Usuário não encontrado",
-            "content": {
-                "application/json": {
-                    "example": {
-                        "detail": "If the user exists, a password reset email has been sent."
-                    }
-                }
-            }
-        }
-    }
-    status_code=status.HTTP_200_OK,
-    response_model=dict
 )
 def forgot_password(
     data: ForgotPasswordRequest,

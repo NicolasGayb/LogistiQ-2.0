@@ -2,6 +2,7 @@
 import uuid
 from pydantic import BaseModel, ConfigDict, EmailStr
 from typing import Optional
+from datetime import datetime
 
 # Importação interna
 from app.models.enum import UserRole
@@ -34,7 +35,9 @@ class UserUpdate(BaseModel):
     name: Optional[str] = None
     role: Optional[UserRole] = None
     email: Optional[EmailStr] = None
+    password: Optional[str] = None
     company_id: Optional[uuid.UUID] = None
+    is_active: Optional[bool] = None
 
 # Esquema de resposta de Usuário
 class UserResponse(BaseModel):
@@ -43,6 +46,8 @@ class UserResponse(BaseModel):
     email: EmailStr
     role: UserRole
     company_id: Optional[uuid.UUID] = None
+    updated_at: datetime
+    created_at: datetime
 
     is_active: bool
     company: Optional[CompanySummary] = None

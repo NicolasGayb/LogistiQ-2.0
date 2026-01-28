@@ -1,87 +1,147 @@
 import { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 import api from '../../api/client';
 import { useAuthContext } from '../../context/AuthContext';
 import './Modal.css';
 
 interface Company {
-  id: number;
+  id: string;
   name: string;
+  cnpj: string;
+}
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  is_active?: boolean;
+  // O objeto completo da empresa que vem da lista de usuários
+  company?: {
+    id: string;
+    name: string;
+    cnpj: string;
+  } | null;
 }
 
 interface CreateUserModalProps {
-  isOpen: boolean; // Controla se o modal está aberto
-  onClose: () => void; // Função para fechar o modal
-  onSuccess: () => void; // Recarrega a lista de usuários após criação
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+  userToEdit?: User | null;
 }
 
-export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalProps) {
-  const { user } = useAuthContext(); // Pega o usuário logado do contexto
+export function CreateUserModal({ isOpen, onClose, onSuccess, userToEdit }: CreateUserModalProps) {
+  const { user } = useAuthContext();
   const [loading, setLoading] = useState(false);
-  const [companies, setCompanies] = useState<Company[]>([]); // Lista de empresas para o select
+  const [companies, setCompanies] = useState<Company[]>([]);
   
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     role: 'USER',
-    company_id: '', // Campo para empresa (só SYSTEM_ADMIN preenche)
+    company_cnpj: '' // <--- VOLTAMOS PARA CNPJ
   });
 
-  // Se for SYSTEM_ADMIN, busca as empresas assim que o modal abrir
-  useEffect(() => {
-    if (isOpen && user?.role === 'SYSTEM_ADMIN') {
-      api.get('/companies')
-        .then(response => setCompanies(response.data))
-        .catch(error => console.error("Erro ao buscar empresas:", error));
-    }
-  }, [isOpen, user]);
+  const isSystemAdmin = user?.role === 'SYSTEM_ADMIN';
+  const isEditing = !!userToEdit;
 
-  if (!isOpen) return null;
+  // Carrega empresas ao abrir (Se for System Admin)
+  useEffect(() => {
+    if (isOpen && isSystemAdmin) {
+      api.get('/companies/list')
+        .then(response => {
+          if (Array.isArray(response.data)) {
+            setCompanies(response.data);
+          } else if (response.data && Array.isArray(response.data.items)) {
+            setCompanies(response.data.items);
+          } else {
+            setCompanies([]);
+          }
+        })
+        .catch(error => {
+          console.error("Erro ao buscar empresas:", error);
+          setCompanies([]);
+        });
+    }
+  }, [isOpen, isSystemAdmin]);
+
+  // Preenche o formulário quando for Edição
+  useEffect(() => {
+    if (isOpen && userToEdit) {
+      // Extrai o CNPJ para preencher o select
+      let currentCnpj = '';
+      if (userToEdit.company?.cnpj) {
+        currentCnpj = userToEdit.company.cnpj;
+      }
+
+      setFormData({
+        name: userToEdit.name || '',
+        email: userToEdit.email || '',
+        password: '', // Senha vazia na edição
+        role: userToEdit.role || 'USER',
+        company_cnpj: currentCnpj // <--- Preenche com o CNPJ
+      });
+    } else if (isOpen && !userToEdit) {
+      // Reset para criação
+      setFormData({ name: '', email: '', password: '', role: 'USER', company_cnpj: '' });
+    }
+  }, [isOpen, userToEdit]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Payload de criação de usuário
-      const payload = {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
+      // Prepara o payload
+      const payload: any = {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
         role: formData.role,
-        // Só envia o company_id se for SYSTEM_ADMIN. 
-        // Se for outro, o backend ignora ou pega do token.
-        company_id: user?.role === 'SYSTEM_ADMIN' ? Number(formData.company_id) : undefined
+        // Envia o CNPJ se for System Admin
+        company_cnpj: isSystemAdmin && formData.company_cnpj ? formData.company_cnpj : undefined
       };
 
-      await api.post('/auth/register', payload);
+      // Lógica de Senha
+      if (!isEditing || (isEditing && formData.password.length > 0)) {
+         payload.password = formData.password;
+      }
+
+      if (isEditing && userToEdit) {
+        // --- ATUALIZAR (PUT) ---
+        await api.put(`/users/update-user/${userToEdit.id}`, payload);
+      } else {
+        // --- CRIAR (POST) ---
+        await api.post('/auth/register', payload);
+      }
 
       onSuccess();
       onClose();
-      // Reset do form
-      setFormData({ name: '', email: '', password: '', role: 'USER', company_id: '' });
 
-    } catch (error) {
-      alert('Erro ao criar usuário. Verifique os dados.');
+    } catch (error: any) {
+      const msg = error.response?.data?.detail || 'Erro ao salvar usuário.';
+      alert(msg);
       console.error(error);
     } finally {
       setLoading(false);
     }
   }
 
-  const isSystemAdmin = user?.role === 'SYSTEM_ADMIN';
+  if (!isOpen) return null;
 
   return (
     <div className="modal-overlay">
       <div className="modal-content">
         <div className="modal-header">
-          <h2 className="modal-title">Novo Usuário</h2>
-          <button onClick={onClose} className="close-button">&times;</button>
+          <h2 className="modal-title">{isEditing ? 'Editar Usuário' : 'Novo Usuário'}</h2>
+          <button onClick={onClose} className="close-button" type="button">
+             <X size={24} />
+          </button>
         </div>
 
         <form onSubmit={handleSubmit}>
           
-          {/* ... Campos Nome, Email e Senha ... */}
           <div className="form-group">
             <label className="form-label">Nome</label>
             <input 
@@ -90,6 +150,7 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
               onChange={e => setFormData({...formData, name: e.target.value})} 
             />
           </div>
+
           <div className="form-group">
             <label className="form-label">Email</label>
             <input 
@@ -98,29 +159,42 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
               onChange={e => setFormData({...formData, email: e.target.value})} 
             />
           </div>
+
           <div className="form-group">
-            <label className="form-label">Senha</label>
+            <label className="form-label">
+              {isEditing ? 'Nova Senha (deixe em branco para manter)' : 'Senha'}
+            </label>
             <input 
-              type="password" className="form-input" required minLength={6}
+              type="password" 
+              className="form-input" 
+              required={!isEditing} 
+              minLength={6}
               value={formData.password}
               onChange={e => setFormData({...formData, password: e.target.value})} 
+              placeholder={isEditing ? "******" : ""}
             />
           </div>
 
-          {/* CAMPO DE EMPRESA (Só aparece para SYSTEM_ADMIN) */}
+          {/* CAMPO DE EMPRESA (System Admin) */}
           {isSystemAdmin && (
             <div className="form-group">
-              <label className="form-label">Empresa (Obrigatório)</label>
+              <label className="form-label">
+                Empresa{formData.role === 'SYSTEM_ADMIN' ? ' (opcional para Super Admin)' : ' (Obrigatório)'}
+              </label>
               <select
                 className="form-select"
-                required={isSystemAdmin} // HTML valida se é obrigatório
-                value={formData.company_id}
-                onChange={e => setFormData({...formData, company_id: e.target.value})}
+                required={formData.role !== 'SYSTEM_ADMIN'}
+                value={formData.company_cnpj} // <--- Usa o CNPJ no value
+                onChange={e => setFormData({...formData, company_cnpj: e.target.value})}
               >
                 <option value="">Selecione uma empresa...</option>
+                {companies.length === 0 && (
+                  <option disabled>Carregando ou nenhuma empresa...</option>
+                )}
                 {companies.map(company => (
-                  <option key={company.id} value={company.id}>
-                    {company.name}
+                  // IMPORTANTE: Aqui o value é o CNPJ
+                  <option key={company.id} value={company.cnpj}>
+                    {company.name} ({company.cnpj})
                   </option>
                 ))}
               </select>
@@ -143,8 +217,12 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
 
           <div className="modal-actions">
             <button type="button" onClick={onClose} className="btn-secondary">Cancelar</button>
-            <button type="submit" disabled={loading} className="btn-primary" style={{backgroundColor: '#10b981', color:'white', padding:'8px 16px', borderRadius:'6px'}}>
-              {loading ? 'Salvando...' : 'Criar Usuário'}
+            <button 
+                type="submit" 
+                disabled={loading} 
+                className="btn-primary"
+            >
+              {loading ? 'Salvando...' : (isEditing ? 'Atualizar' : 'Criar Usuário')}
             </button>
           </div>
         </form>

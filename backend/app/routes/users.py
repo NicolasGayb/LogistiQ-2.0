@@ -3,6 +3,7 @@ import email
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 # Importações internas
 from app.database import get_db
@@ -216,7 +217,7 @@ def update_user(
     if not user:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found")
     
-    if current_user.role == UserRole.ADMIN:
+    if current_user.role == UserRole.ADMIN or current_user.role == UserRole.MANAGER:
         if user.company_id != current_user.company_id:
             raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Not authorized to update this user")
         
@@ -224,6 +225,10 @@ def update_user(
         user.name = data.name
     if data.role:
         user.role = data.role
+    if data.email:
+        user.email = data.email
+    if data.password:
+        user.password_hash = hash_password(data.password)
 
     db.commit()
     db.refresh(user)
@@ -237,7 +242,7 @@ def delete_user(
     user_id: UUID,
     db: Session = Depends(get_db),
     current_user: User = Depends(
-        require_roles(UserRole.SYSTEM_ADMIN)
+        require_roles([UserRole.SYSTEM_ADMIN])
     )
 ):
     '''Deleta um usuário específico. Apenas SYSTEM_ADMIN pode acessar este endpoint.
@@ -256,6 +261,86 @@ def delete_user(
     if not user:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found")
     
-    db.delete(user)
-    db.commit()
+    try:
+        db.delete(user)
+        db.commit()
+    except IntegrityError as e:
+        db.rollback()
+        #Retorna erro 409 de conflito
+        raise HTTPException(status.HTTP_409_CONFLICT, detail="Cannot delete user due to existing references in the system.")
+
     return f"User with ID {user_id} has been deleted."
+
+# ------------------------------------------
+# PATCH Users
+# ------------------------------------------
+@router.patch("/change-password/{user_id}", response_model=str)
+def change_user_password(
+    user_id: UUID,
+    new_password: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_roles([UserRole.SYSTEM_ADMIN, UserRole.ADMIN, UserRole.MANAGER, UserRole.USER])
+    )
+):
+    '''Altera a senha de um usuário específico.
+    
+    Args:
+        user_id (UUID): ID do usuário cuja senha será alterada.
+        new_password (str): Nova senha para o usuário.
+        db (Session, optional): Sessão do banco de dados. Padrão é Depends(get_db).
+        current_user (User, optional): Usuário autenticado. Padrão é Depends(require_roles(...)).
+    Returns:
+        str: Mensagem de confirmação da alteração da senha.
+    Raises:
+        HTTPException: Se o usuário não for encontrado ou se o usuário atual não tiver permissão para alterar a senha do usuário solicitado.
+    '''
+    user = db.query(User).filter(User.id == user_id).first()
+
+    if not user:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found")
+    
+    if current_user.role != UserRole.SYSTEM_ADMIN:
+        if user.id != current_user.id:
+            raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Not authorized to change this user's password")
+        
+    user.password_hash = hash_password(new_password)
+    db.commit()
+    db.refresh(user)
+
+    return f"Password for user with ID {user_id} has been changed."
+
+@router.patch("/toggle-user/{user_id}", response_model=str)
+def toggle_user_active_status(
+    user_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_roles([UserRole.SYSTEM_ADMIN, UserRole.ADMIN])
+    )
+):
+    '''Ativa ou desativa um usuário específico com base na role do usuário atual.
+    
+    Args:
+        user_id (UUID): ID do usuário a ser ativado/desativado.
+        db (Session, optional): Sessão do banco de dados. Padrão é Depends(get_db).
+        current_user (User, optional): Usuário autenticado. Padrão é Depends(require_roles(...)).
+    Returns:
+        str: Mensagem de confirmação da alteração do status do usuário.
+    Raises:
+        HTTPException: Se o usuário não for encontrado ou se o usuário atual não tiver permissão para alterar o status do usuário solicitado.
+    '''
+    user = db.query(User).filter(User.id == user_id).first()
+
+    if not user:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found")
+    
+    if current_user.role == UserRole.ADMIN:
+        if user.company_id != current_user.company_id:
+            raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Not authorized to toggle this user")
+    
+    user.is_active = not user.is_active
+    db.commit()
+    db.refresh(user)
+
+    status_str = "activated" if user.is_active else "deactivated"
+    return f"User with ID {user_id} has been {status_str}."
