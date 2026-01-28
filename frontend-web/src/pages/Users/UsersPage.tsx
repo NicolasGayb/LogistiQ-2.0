@@ -17,7 +17,7 @@ import {
 import { Button } from '../../components/Button/Button';
 import { Card } from '../../components/Card/Card';
 import api from '../../api/client';
-import { CreateUserModal } from '../../components/Modal/Modal';
+import { CreateUserModal } from '../../components/Modal/CreateUserModal';
 import { useAuthContext } from '../../context/AuthContext'; // Importante para saber quem é o admin
 import './UsersPage.css';
 
@@ -208,12 +208,12 @@ export default function UsersPage() {
                 ) : (
                     <table className="data-table">
                         <thead>
-                        <tr>
-                            <th style={{ width: '40%' }}>Usuário</th>
-                            <th style={{ width: '30%' }}>Cargo & Empresa</th>
-                            <th style={{ width: '20%' }}>Status & Atualização</th>
-                            <th align='right' style={{ width: '10%' }}></th> {/* Coluna para ações */}
-                        </tr>
+                            <tr>
+                                <th style={{ width: '40%' }}>Usuário</th>
+                                <th style={{ width: '30%' }}>Cargo & Empresa</th>
+                                <th style={{ width: '20%' }}>Status & Atualização</th>
+                                <th align='right' style={{ width: '10%' }}></th> {/* Coluna para ações */}
+                            </tr>
                         </thead>
                         <tbody>
                         {/* -- RENDERIZAÇÃO DOS USUÁRIOS -- */}

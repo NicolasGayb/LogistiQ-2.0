@@ -1,0 +1,289 @@
+/* src/pages/Companies/CompaniesPage.css */
+
+/* --- LAYOUT GLOBAL DA PÁGINA --- */
+.page-container {
+  max-width: 1200px;       /* Mantém o conteúdo centralizado e não esticado */
+  width: 95%;
+  margin: 40px auto;       /* Centraliza na tela */
+  padding-bottom: 40px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- HEADER --- */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a; /* Slate 900 */
+  margin-bottom: 4px;
+}
+
+.page-subtitle {
+  color: #64748b; /* Slate 500 */
+  font-size: 0.875rem;
+}
+
+/* --- TOOLBAR (Busca) --- */
+.toolbar {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.search-box {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 10px 12px 10px 40px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  outline: none;
+  transition: all 0.2s;
+  background-color: white;
+}
+
+.search-box input:focus {
+  border-color: #10b981; /* Verde LogistiQ */
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* --- TABELA E CARD --- */
+.table-card {
+  overflow: visible !important; /* Importante para o Dropdown não cortar */
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 16px 24px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+}
+
+.data-table td {
+  padding: 16px 24px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  font-size: 0.875rem;
+}
+
+.hover-row:hover {
+  background-color: #f8fafc;
+  transition: background-color 0.15s ease;
+}
+
+/* --- COMPONENTES DA CÉLULA --- */
+
+/* Avatar / Ícone da Empresa */
+.user-info {
+  display: flex;
+  align-items: center;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  background-color: #f1f5f9;
+  border-radius: 8px; /* Quadrado arredondado para empresas */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.user-name {
+  display: block;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.user-email { /* Usado para o CNPJ aqui */
+  display: block;
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-badge.active {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.status-badge.inactive {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+/* Data de Criação */
+.date-display {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+/* --- TOKEN DISPLAY (Estilo novo para o Token) --- */
+.token-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  max-width: 200px;
+}
+
+.token-text {
+  font-family: 'Courier New', Courier, monospace; /* Fonte monoespaçada para código */
+  font-size: 0.75rem;
+  color: #475569;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copy-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.copy-btn:hover {
+  color: #3b82f6; /* Azul ao passar o mouse */
+}
+
+/* --- BOTÕES DE AÇÃO E DROPDOWN --- */
+.action-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.action-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+.dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 4px;
+  width: 160px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  z-index: 50;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.875rem;
+  color: #475569;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+.dropdown-item.danger {
+  color: #ef4444;
+}
+
+.dropdown-item.danger:hover {
+  background-color: #fef2f2;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px !important;
+  color: #94a3b8;
+}
