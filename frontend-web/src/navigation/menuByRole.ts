@@ -8,11 +8,11 @@ export interface MenuItem {
 export const menuByRole: Record<UserRole, MenuItem[]> = {
     SYSTEM_ADMIN: [
         { label: 'Dashboard', path: '/dashboard' },
+        { label: 'Relatórios', path: '/reports' },
         { label: 'Usuários', path: '/users' },
+        { label: 'Empresas', path: '/companies' },
         { label: 'Configurações', path: '/settings' },
         { label: 'Configurações de Sistema', path: '/system-settings' },
-        { label: 'Relatórios', path: '/reports' },
-        { label: 'Empresas', path: '/companies' },
     ],
     ADMIN: [
         { label: 'Dashboard', path: '/dashboard' },
