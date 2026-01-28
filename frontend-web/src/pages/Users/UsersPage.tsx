@@ -263,6 +263,7 @@ export default function UsersPage() {
                                         
                                         {/* Data com visual de "pill" (pílula) cinza */}
                                         <div className="date-display" title="Última atualização">
+                                            <Calendar size={12} />
                                             <Clock size={12} />
                                             <span>{formatDate(user.updated_at)}</span>
                                         </div>
