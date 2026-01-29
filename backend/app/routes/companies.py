@@ -378,21 +378,23 @@ def update_company(
 # ------------------------
 # PATCH Companies
 # ------------------------
-@router.patch("/{company_id}/deactivate", response_model=CompanyResponse)
-def deactivate_company(
+@router.patch("/toggle-company/{company_id}", response_model=CompanyResponse)
+def toggle_company_status(
     company_id: uuid.UUID,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles([UserRole.SYSTEM_ADMIN]))
-):
-    '''Desativa uma empresa pelo ID.
+) -> Company:
+    '''Ativa ou desativa uma empresa pelo ID.
     
     - Requer permissão de SYSTEM_ADMIN.
     - Lança erro se a empresa não for encontrada.
     
     Args:
-        company_id (uuid.UUID): ID da empresa a ser desativada.
+        company_id (uuid.UUID): ID da empresa a ser ativada/desativada.
         db (Session): Sessão do banco de dados.
         current_user (User): Usuário autenticado.
+    Returns:
+        Company: Instância da empresa atualizada.
     '''
     company = db.query(Company).filter(Company.id == company_id).first()
 
@@ -401,11 +403,18 @@ def deactivate_company(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Empresa não encontrada"
         )
-
-    company.is_active = not company.is_active
-    db.commit()
-    db.refresh(company)
-    return company
+    try:
+        company.is_active = not company.is_active
+        db.commit()
+        db.refresh(company)
+        return company
+    except Exception:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Erro ao atualizar status da empresa"
+        )
+    
 
 # ------------------------
 # DELETE Companies

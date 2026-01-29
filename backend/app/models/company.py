@@ -30,6 +30,12 @@ class Company(Base):
         server_default=func.now(),
     )
 
+    updated_at: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
     token: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
 
     products = relationship("Product", back_populates="company", cascade="all, delete-orphan")

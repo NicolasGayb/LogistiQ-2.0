@@ -2,6 +2,7 @@
 import uuid
 from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
 from typing import Optional
+from datetime import datetime
 
 # Importação interna
 from app.core.validators import normalize_cnpj
@@ -10,6 +11,7 @@ from app.core.validators import normalize_cnpj
 class CompanyCreate(BaseModel):
     name: str
     cnpj: Optional[str] = None
+    is_active: bool = True
 
     # Validador para normalizar o CNPJ antes da validação
     @field_validator("cnpj", mode="before")
@@ -23,6 +25,9 @@ class CompanyResponse(BaseModel):
     name: str
     cnpj: Optional[str]
     token: str
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
