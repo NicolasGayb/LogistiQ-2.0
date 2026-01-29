@@ -287,3 +287,52 @@
   padding: 40px !important;
   color: #94a3b8;
 }
+
+/* --- VISUAL DO TOKEN (TOKEN BADGE) --- */
+.token-badge-container {
+  display: inline-flex;
+  align-items: center;
+  background-color: #f8fafc; /* Fundo cinza bem claro */
+  border: 1px solid #e2e8f0; /* Borda sutil */
+  border-radius: 6px;
+  padding: 6px 10px; /* Espaçamento interno confortável */
+  gap: 10px; /* Espaço entre o ícone, o texto e o botão */
+  max-width: 100%;
+  transition: border-color 0.2s;
+}
+
+.token-badge-container:hover {
+    border-color: #cbd5e1; /* Escurece um pouco a borda ao passar o mouse */
+}
+
+.token-value {
+  font-family: 'Roboto Mono', 'Courier New', monospace; /* Fonte monoespaçada para código */
+  font-size: 0.8rem;
+  color: #475569; /* Slate 600 */
+  letter-spacing: -0.02em;
+}
+
+/* Pequena linha vertical separadora */
+.token-divider {
+    width: 1px;
+    height: 14px;
+    background-color: #cbd5e1; /* Slate 300 */
+}
+
+.token-copy-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8; /* Slate 400 (inativo) */
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.token-copy-btn:hover {
+    background-color: #e2e8f0; /* Fundo cinza ao passar o mouse */
+    color: #16a34a; /* Verde ao passar o mouse (feedback de ação) */
+}

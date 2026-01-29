@@ -1,35 +1,40 @@
+// Bibliotecas
 import { useState, useEffect } from 'react';
 import {
   Plus, Search, MoreVertical, Building2, CheckCircle, XCircle,
-  Edit, Trash2, Clock, Key, Copy
+  Edit, Trash2, Clock, Key, Copy, Power, Ban
 } from 'lucide-react';
 
+// Componentes
 import { Button } from '../../components/Button/Button';
 import { Card } from '../../components/Card/Card';
 import api from '../../api/client';
 import { CreateCompanyModal } from '../../components/Modal/CreateCompanyModal';
 import '../Users/UsersPage.css'; // Reutilizando estilos globais
+import './CompaniesPage.css';
 
-// Interface baseada estritamente no seu Model Python
+// Interface baseada estritamente no Model Python
 interface Company {
   id: string;
   name: string;
   cnpj: string;
   is_active: boolean;
-  created_at: string;
+  updated_at?: string;
   token: string;
 }
 
 export default function CompaniesPage() {
+    // Estados principais
     const [companies, setCompanies] = useState<Company[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     
-    // Estados
+    // Estados de controle
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [companyToEdit, setCompanyToEdit] = useState<Company | null>(null);
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
+    // Busca empresas ao carregar a página
     useEffect(() => {
         fetchCompanies();
     }, []);
@@ -41,6 +46,7 @@ export default function CompaniesPage() {
         return () => window.removeEventListener('click', handleClickOutside);
     }, [activeMenuId]);
 
+    // Função para buscar empresas
     async function fetchCompanies() {
         try {
             // Ajuste a rota conforme seu backend. Assumindo /companies ou /companies/list
@@ -59,12 +65,14 @@ export default function CompaniesPage() {
     const toggleMenu = (id: string) => activeMenuId === id ? setActiveMenuId(null) : setActiveMenuId(id);
     const handleOpenCreate = () => { setCompanyToEdit(null); setIsModalOpen(true); };
     
+    // Função de edição
     const handleEdit = (company: Company) => { 
         setActiveMenuId(null); 
         setCompanyToEdit(company); 
         setIsModalOpen(true); 
     };
 
+    // Função de exclusão com confirmação
     const handleDelete = async (company: Company) => {
         setActiveMenuId(null);
         if (confirm(`ATENÇÃO: Deseja excluir a empresa ${company.name}? Isso pode apagar produtos vinculados.`)) {
@@ -83,6 +91,7 @@ export default function CompaniesPage() {
         alert('Token copiado para a área de transferência!');
     };
 
+    // Formatação de data para exibição
     const formatDate = (dateString?: string) => {
         if (!dateString) return '—';
         return new Date(dateString).toLocaleDateString('pt-BR', {
@@ -91,11 +100,48 @@ export default function CompaniesPage() {
         });
     };
 
+    // Filtragem de empresas com base no termo de busca
     const filteredCompanies = companies.filter((c) =>
         c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         c.cnpj.includes(searchTerm)
     );
+    
+    // Função para mascarar o token na exibição
+    const maskToken = (token: string) => {
+        if (!token || token.length <= 12) return token;
+        return `${token.substring(0, 8)}••••••${token.substring(token.length - 4)}`;
+    };
 
+    // Função para ativar/desativar empresa
+    const handleToggleStatus = async (company: Company) => {
+        setActiveMenuId(null);
+        
+        // Verificação de qual ação tomar
+        const action = company.is_active ? 'desativar' : 'ativar';
+        // Mensagem de confirmação
+        const confirmMessage = `Tem certeza que deseja ${action} a empresa ${company.name}?`;
+
+        if (confirm(confirmMessage)) {
+            try {
+                // Chamada à API para alternar status
+                const response = await api.patch(`/companies/toggle-company/${company.id}`, {});
+                // Recarrega a lista após a ação
+                fetchCompanies();
+                // Mostra a mensagem de sucesso
+                const successMsg = response.data.message || `Empresa ${action} com sucesso.`;
+                alert(successMsg);
+
+            // Tratamento de erro
+            } catch (error: any) {
+                const msg = error.response?.data?.detail || `Erro ao ${action} empresa.`;
+                alert(msg);
+                // Log detalhado para depuração
+                console.error(error);
+            }
+        }
+    };
+
+    // Renderização do componente
     return (
         <div className="page-container fade-in">
             <header className="page-header">
@@ -111,6 +157,7 @@ export default function CompaniesPage() {
                 </Button>
             </header>
 
+            {/* Barra de busca */}
             <div className="toolbar">
                 <div className="search-box">
                     <Search size={18} className="search-icon" />
@@ -123,18 +170,19 @@ export default function CompaniesPage() {
                 </div>
             </div>
 
+            {/* Tabela de empresas */}
             <Card noPadding className="table-card">
                 {loading ? (
                     <div className="loading-state">Carregando...</div>
                 ) : (
                     <table className="data-table">
                         <thead>
-                        <tr>
-                            <th style={{ width: '40%' }}>Empresa</th>
-                            <th style={{ width: '30%' }}>Token de Acesso</th>
-                            <th style={{ width: '20%' }}>Status & Data</th>
-                            <th align="right" style={{ width: '10%' }}></th>
-                        </tr>
+                            <tr>
+                                <th style={{ width: '40%' }}>Empresa</th>
+                                <th style={{ width: '30%' }}>Token de Acesso</th>
+                                <th style={{ width: '20%' }}>Status & Data</th>
+                                <th align="right" style={{ width: '10%' }}></th>
+                            </tr>
                         </thead>
                         <tbody>
                         {filteredCompanies.length > 0 ? (
@@ -153,19 +201,30 @@ export default function CompaniesPage() {
                                     </div>
                                 </td>
 
-                                {/* 2. TOKEN (Novo campo do Model) */}
-                                <td>
-                                    <div className="flex items-center gap-2 bg-slate-50 p-2 rounded border border-slate-200 w-fit max-w-[200px]">
+                                {/* 2. TOKEN */}
+                                <td style={{ verticalAlign: 'middle' }}>
+                                    <div className='token-badge-container'>
+                                        {/* Ícone de chave */}
                                         <Key size={14} className="text-slate-400 shrink-0" />
-                                        <span className="text-xs text-slate-600 truncate select-all font-mono">
-                                            {company.token}
+
+                                        {/* Valor Mascarado */}
+                                        <span className="token-value" title="Token de Acesso (Mascarado)">
+                                            {maskToken(company.token)}
                                         </span>
+
+                                        {/* Divisor Vertical */}
+                                        <div className="token-divider"></div>
+
+                                        {/* Botão de Copiar */}
                                         <button 
-                                            onClick={() => copyToken(company.token)}
-                                            className="text-slate-400 hover:text-blue-500 transition-colors"
-                                            title="Copiar Token"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                copyToken(company.token);
+                                            }}
+                                            className="token-copy-btn"
+                                            title="Copiar Token Completo"
                                         >
-                                            <Copy size={12} />
+                                            <Copy size={14} />
                                         </button>
                                     </div>
                                 </td>
@@ -181,7 +240,7 @@ export default function CompaniesPage() {
                                         </div>
                                         <div className="date-display">
                                             <Clock size={12} />
-                                            <span>{formatDate(company.created_at)}</span>
+                                            <span>{formatDate(company.updated_at)}</span>
                                         </div>
                                     </div>
                                 </td>
@@ -194,12 +253,28 @@ export default function CompaniesPage() {
                                         </button>
                                         {activeMenuId === company.id && (
                                             <div className='dropdown-menu'>
+                                                {/* Botão de edição */}
                                                 <button className='dropdown-item' onClick={(e) => { 
                                                     e.stopPropagation(); handleEdit(company); 
                                                 }}>
                                                     <Edit size={16} /> Editar
                                                 </button>
                                                 
+                                                {/* Botão de ativar/desativar */}
+                                                <button
+                                                    className={`dropdown-item ${company.is_active ? 'danger' : 'success'}`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleToggleStatus(company);
+                                                    }}
+                                                >
+                                                    {company.is_active ? (
+                                                        <><Ban size={16} /> Desativar</>
+                                                    ) : (
+                                                        <><Power size={16} /> Ativar</>
+                                                    )}
+                                                </button>
+
                                                 <button className='dropdown-item danger' onClick={(e) => { 
                                                     e.stopPropagation(); handleDelete(company); 
                                                 }}>
