@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Script de automação de build para Heroku",
   "scripts": {
-    "heroku-postbuild": "cd frontend-web && npm install && npm run build && rm -rf ../backend/dist && mv dist ../backend/"
+    "heroku-postbuild": "cd frontend-web && npm install --include=dev && npm run build && rm -rf ../backend/dist && mv dist ../backend/"
   },
   "engines": {
     "node": "18.x"
