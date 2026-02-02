@@ -14,6 +14,8 @@ class Company(Base):
         cnpj (str): CNPJ da empresa.
         is_active (bool): Indica se a empresa está ativa.
         created_at (DateTime): Data e hora de criação do registro.
+        updated_at (DateTime): Data e hora da última atualização do registro.
+        stock_alert_limit (int): Limite de alerta de estoque para a empresa.
         token (str): Token único associado à empresa.
         products (List[Product]): Relação com os produtos da empresa.
         users (List[User]): Relação com os usuários associados à empresa.
@@ -35,6 +37,8 @@ class Company(Base):
         server_default=func.now(),
         onupdate=func.now(),
     )
+
+    stock_alert_limit: Mapped[int] = mapped_column(Integer, default=10, nullable=False)
 
     token: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
 

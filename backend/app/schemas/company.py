@@ -51,3 +51,7 @@ class DashboardStatsResponse(BaseModel):
     companies_count: int  
     users_count: int      
     system_status: str
+
+class CompanySettingsUpdate(BaseModel):
+    name: Optional[str] = None # Nome Fantasia
+    stock_alert_limit: Optional[int] = None

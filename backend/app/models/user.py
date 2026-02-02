@@ -20,6 +20,10 @@ class User(Base):
         reset_password_token (str | None): Token para redefinição de senha.
         reset_password_token_expires_at (DateTime | None): Data de expiração do token de redefinição de senha.
         role (UserRole): Papel do usuário no sistema.
+        updated_at (DateTime): Data e hora da última atualização do registro.
+        notification_stock_alert (bool): Indica se o usuário deseja receber alertas de estoque.
+        notification_weekly_summary (bool): Indica se o usuário deseja receber resumos semanais.
+        theme_preference (str): Preferência de tema do usuário (ex: "light", "dark", "auto").
         company_id (uuid.UUID): Identificador da empresa associada ao usuário.
         is_active (bool): Indica se o usuário está ativo.
         created_at (DateTime): Data de criação do registro do usuário.
@@ -70,5 +74,11 @@ class User(Base):
         default=func.now(),
         onupdate=func.now(),
     )
+
+    notification_stock_alert: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
+    notification_weekly_summary: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+
+    theme_preference: Mapped[str] = mapped_column(String(50), default="auto", nullable=False)
 
     company = relationship("Company", back_populates="users")

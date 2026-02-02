@@ -54,4 +54,16 @@ class UserResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+# Esquema de atualização de configurações do Usuário
+class UserUpdateSettings(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    notification_stock_alert: Optional[bool] = None
+    notification_weekly_summary: Optional[bool] = None
+    theme_preference: Optional[str] = None
 
+# Esquema para troca de senha
+class UserChangePassword(BaseModel):
+    current_password: str
+    new_password: str
+    confirm_password: str

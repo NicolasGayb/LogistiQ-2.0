@@ -5,6 +5,7 @@ import { ProtectedRoute } from './ProtectedRoute';
 import Dashboard from '../pages/Dashboard/dashboards/SystemAdminDashboard';
 import UsersPage from '../pages/Users/UsersPage';
 import CompaniesPage from '../pages/Companies/CompaniesPage';
+import { SettingsPage } from '../pages/Settings/SettingsPage';
 
 export function SystemAdminNavigation() {
   return (
@@ -19,6 +20,7 @@ export function SystemAdminNavigation() {
         <Route path="/users" element={<UsersPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/companies" element={<CompaniesPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
         {/* fallback para evitar tela branca */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>

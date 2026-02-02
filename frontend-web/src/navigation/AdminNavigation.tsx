@@ -4,6 +4,7 @@ import { ProtectedRoute } from './ProtectedRoute';
 import UsersPage from '../pages/Users/UsersPage';
 
 import Dashboard from '../pages/Dashboard/dashboards/AdminDashboard';
+import { SettingsPage } from '../pages/Settings/SettingsPage';
 
 export function AdminNavigation() {
   return (
@@ -17,6 +18,7 @@ export function AdminNavigation() {
       >
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/users" element={<UsersPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
 
         {/* fallback para evitar tela branca */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
