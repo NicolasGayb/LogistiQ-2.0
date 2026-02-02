@@ -6,6 +6,6 @@
     "heroku-postbuild": "cd frontend-web && npm install --include=dev && npm run build && rm -rf ../backend/dist && mv dist ../backend/"
   },
   "engines": {
-    "node": "18.x"
+    "node": "20.x"
   }
 }
