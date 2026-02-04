@@ -1,7 +1,10 @@
 # Importações externas
+import os
 import email
+import shutil
+from typing import Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Response, UploadFile, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
@@ -11,7 +14,7 @@ from app.core.dependencies import get_current_user, require_roles
 from app.models.enum import UserRole
 from app.models import User
 from app.core.security import hash_password, verify_password
-from app.schemas.user import UserChangePassword, UserCreate, UserRegisterWithToken, UserResponse, UserUpdate, UserUpdateSettings
+from app.schemas.user import UserChangePassword, UserCreate, UserRegisterWithToken, UserResponse, UserUpdate
 from app.models.company import Company
 from app.schemas.company import CompanySettingsUpdate
 
@@ -33,7 +36,7 @@ def list_users(
         db (Session, optional): Sessão do banco de dados. Padrão é Depends(get_db).
         current_user (User, optional): Usuário autenticado. Padrão é Depends(require_roles(...)).
     Returns:
-        list[User]: Lista de usuários conforme a role do usuário atual.
+        list[UserResponse]: Lista de usuários conforme a role do usuário atual.
     '''
     print(f"Listing users for {current_user.email} with role {current_user.role}")
     print(f"Current user's company ID: {current_user.company_id}")
@@ -58,6 +61,19 @@ def list_users(
             User.company_id == current_user.company_id,
             User.role != UserRole.ADMIN
         ).all()
+    
+@router.get('/me', response_model=UserResponse)
+def get_my_profile(
+    current_user: User = Depends(get_current_user)
+):
+    '''Obtém o perfil do usuário autenticado.
+    
+    Args:
+        current_user (User, optional): Usuário autenticado. Padrão é Depends(get_current_user).
+    Returns:
+        User: Detalhes do usuário autenticado.
+    '''
+    return current_user
 
 @router.get("/{user_id}", response_model=UserResponse)
 def get_user(
@@ -350,36 +366,72 @@ def toggle_user_active_status(
 # Contexto: Eu configurando meu perfil
 # ----------------------------------------------------------------------
 # Rota para atualizar perfil do usuário logado e preferências
-@router.put("/me/profile", response_model=UserResponse)
+@router.put("/me/profile")
 def update_my_profile(
-    data: UserUpdateSettings,
+    # Form(...) para campos de texto e File(...) para o arquivo
+    name: Optional[str] = Form(None),
+    email: Optional[str] = Form(None),
+    notification_stock_alert: str = Form("true"), # Recebe como string "true"/"false" do FormData
+    notification_weekly_summary: str = Form("true"),
+    theme_preference: str = Form("auto"),
+    avatar: Optional[UploadFile] = File(None), # O Arquivo
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user) # Usa a dependência que pega o token
+    current_user: User = Depends(get_current_user)
 ):
-    """Atualiza perfil e preferências do usuário logado.
+    # 1. Atualiza dados de texto
+    if name: current_user.name = name
+    if email: current_user.email = email
     
-    Args:
-        data (UserUpdateSettings): Dados para atualizar o perfil do usuário.
-        db (Session, optional): Sessão do banco de dados. Padrão é Depends(get_db).
-        current_user (User, optional): Usuário autenticado. Padrão é Depends(get_current_user).
-    Returns:
-        User: Dados do usuário atualizado.
-    """
+    # Converte strings "true"/"false" para boolean
+    if notification_stock_alert is not None:
+        current_user.notification_stock_alert = (notification_stock_alert.lower() == 'true')
     
-    if data.name: current_user.name = data.name
-    if data.email: current_user.email = data.email
-    
-    # Preferências
-    if data.notification_stock_alert is not None:
-        current_user.notification_stock_alert = data.notification_stock_alert
-    if data.notification_weekly_summary is not None:
-        current_user.notification_weekly_summary = data.notification_weekly_summary
-    if data.theme_preference:
-        current_user.theme_preference = data.theme_preference
+    if notification_weekly_summary is not None:
+        current_user.notification_weekly_summary = (notification_weekly_summary.lower() == 'true')
+        
+    if theme_preference:
+        current_user.theme_preference = theme_preference
+
+    # 2. Processa o Arquivo (Upload)
+    if avatar:
+        # Lê o conteúdo do arquivo em bytes
+        file_content = avatar.file.read()
+
+        # Salva os dados binários e o content_type no banco
+        current_user.profile_image = file_content
+        current_user.content_type = avatar.content_type # ex: "image/png"
 
     db.commit()
     db.refresh(current_user)
+
+    # Remove dados binários da imagem do objeto retornado para evitar sobrecarga
+    current_user.profile_image = None
+
+    # Adiciona a URL do avatar ao objeto retornado
+    setattr(current_user, 'avatar_url', f'/users/{current_user.id}/avatar')
+
     return current_user
+
+# Rota para obter a foto de perfil do usuário logado
+@router.get("/{user_id}/avatar")
+def get_user_avatar(
+    user_id: UUID,
+    db: Session = Depends(get_db)
+):
+    """Obtém a foto de perfil do usuário especificado.
+    
+    Args:
+        user_id (UUID): ID do usuário cuja foto de perfil será obtida.
+        db (Session, optional): Sessão do banco de dados. Padrão é Depends(get_db).
+    Returns:
+        Response: Resposta contendo a imagem do avatar ou um erro 404 se não encontrado.
+    """
+    user = db.query(User).filter(User.id == user_id).first()
+    
+    if not user or not user.profile_image:
+        raise HTTPException(status_code=404, detail="Imagem nao encontrada.")
+    
+    return Response(content=user.profile_image, media_type=user.content_type)
 
 # Rota para troca de senha do usuário logado (exige senha atual)
 @router.put("/me/change-password")

@@ -1,6 +1,6 @@
 # Importações padrão
 import uuid
-from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String, func
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, LargeBinary, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -41,6 +41,10 @@ class User(Base):
     reset_password_token: Mapped[str | None] = mapped_column(String(255), nullable=True, unique=True)
     reset_password_token_expires_at: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
+    # Colunas para a foto de perfil
+    profile_image: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True) # Dados binários da imagem
+    content_type: Mapped[str | None] = mapped_column(String(100), nullable=True) # Tipo da imagem (ex: "image/png")
+
     # Definição do papel do usuário usando Enum
     role: Mapped[UserRole] = mapped_column(
     Enum(
@@ -73,6 +77,12 @@ class User(Base):
         server_default=func.now(),
         default=func.now(),
         onupdate=func.now(),
+    )
+
+    updated_by: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True
     )
 
     notification_stock_alert: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)

@@ -1,6 +1,6 @@
 # Importações padrão
 import uuid
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, computed_field, field_validator
 from typing import Optional
 from datetime import datetime
 
@@ -11,6 +11,9 @@ from app.models.enum import UserRole
 class CompanySummary(BaseModel):
     id: uuid.UUID
     name: str
+    cnpj: Optional[str]
+
+    stock_alert_limit: Optional[int] = 10  # Limite padrão de alerta de estoque
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -48,6 +51,15 @@ class UserResponse(BaseModel):
     company_id: Optional[uuid.UUID] = None
     updated_at: datetime
     created_at: datetime
+
+    notification_stock_alert: bool = True
+    notification_weekly_summary: bool = True
+    theme_preference: str = "auto"
+    
+    @computed_field
+    def avatar_url(self) -> str:
+        # Gera a URL do avatar com base no ID do usuário
+        return f"/users/{self.id}/avatar"
 
     is_active: bool
     company: Optional[CompanySummary] = None

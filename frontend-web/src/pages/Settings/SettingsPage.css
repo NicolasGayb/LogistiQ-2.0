@@ -1,5 +1,3 @@
-/* src/pages/Settings/SettingsPage.css */
-
 /* Variáveis para consistência (Cores baseadas no Slate e Emerald) */
 :root {
   --color-primary: #059669;       /* Emerald 600 */
@@ -92,38 +90,84 @@
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
-/* Mini perfil na sidebar */
-.user-summary {
+/* --- MINI PERFIL DA SIDEBAR --- */
+
+/* 1. O Card */
+.settings-sidebar-card {
   margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border-color);
+  padding: 0.75rem 1rem;
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem; 
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  max-width: 100%;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.user-avatar-small {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
+.settings-sidebar-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border-color: var(--color-primary-border);
+}
+
+/* 2. O Avatar */
+.settings-sidebar-avatar {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important; 
   background-color: var(--color-primary-light);
   color: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
+  font-weight: 600;
+  font-size: 1rem;
+  flex-shrink: 0;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px var(--border-color);
 }
 
-.user-info h4 {
+.settings-sidebar-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+
+/* 3. O Texto */
+.settings-sidebar-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-sidebar-info .font-bold {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-dark);
+  color: #1e293b;
   margin: 0;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.user-info span {
+.settings-sidebar-info span {
   font-size: 0.75rem;
-  color: var(--text-medium);
+  color: #64748b;
+  margin-top: 2px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
 }
 
 /* Formulários e Inputs */
@@ -277,3 +321,35 @@ input:checked + .slider:before {
   align-items: center;
 }
 .text-danger:hover { text-decoration: underline; }
+
+/* botão alterar foto */
+.btn-upload {
+  background-color: white;
+  border: 1px solid var(--border-color);
+  color: var(--text-medium);
+  
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  margin-left: auto;
+  align-self: center;
+  height: fit-content;
+}
+
+/* Efeito Hover */
+.btn-upload:hover {
+  border-color: var(--color-primary); 
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Efeito Click */
+.btn-upload:active {
+  transform: translateY(1px);
+}

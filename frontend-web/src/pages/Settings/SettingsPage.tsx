@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { User, Lock, Bell, Building, Save, LogOut, CheckCircle, AlertTriangle } from 'lucide-react';
 import api from '../../api/client';
 import { Card } from '../../components/Card/Card';
@@ -16,6 +16,7 @@ interface UserSettings {
   notification_stock_alert?: boolean;
   notification_weekly_summary?: boolean;
   theme_preference?: string;
+  avatar_url?: string;
   company?: {
     name: string;
     cnpj: string;
@@ -34,6 +35,16 @@ export function SettingsPage() {
   const [prefsForm, setPrefsForm] = useState({ stockAlert: true, weeklySummary: true, theme: 'auto' });
   const [passForm, setPassForm] = useState({ current: '', new: '', confirm: '' });
   const [companyForm, setCompanyForm] = useState({ name: '', cnpj: '', alertLimit: 10 });
+
+  // Estado das fotos de perfil
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  // Estado para controlar a atualização das imagens de avatar
+  const [avatarHash, setAvatarHash] = useState(Date.now());
+
+  // --- Efeitos ---
 
   useEffect(() => {
     fetchUserData();
@@ -65,19 +76,45 @@ export function SettingsPage() {
   };
 
   // --- Handlers ---
+// Manipula mudança de arquivo de avatar
+const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      // Salva uma pré-visualização da imagem selecionada para mostrar ao usuário antes do upload
+      const objectUrl = URL.createObjectURL(file);
+      setPreviewUrl(objectUrl);
+    }
+  };
+
+// Salva perfil e preferências juntos
 const handleSaveProfile = async () => {
     setLoading(true);
     try {
-      // Envia perfil e preferências juntos
-      await api.put('/users/me/profile', {
-        name: profileForm.name,
-        email: profileForm.email,
-        notification_stock_alert: prefsForm.stockAlert,
-        notification_weekly_summary: prefsForm.weeklySummary,
-        theme_preference: prefsForm.theme
+      const formData = new FormData();
+      formData.append('name', profileForm.name);
+      formData.append('email', profileForm.email);
+
+      formData.append('notification_stock_alert', String(prefsForm.stockAlert));
+      formData.append('notification_weekly_summary', String(prefsForm.weeklySummary));
+      formData.append('theme_preference', prefsForm.theme);
+      
+      // Se houver arquivo novo, adiciona
+      if (avatarFile) {
+        formData.append('avatar', avatarFile);
+      }
+
+      // Importante: Ao enviar FormData, o axios/fetch ajusta o Content-Type automaticamente
+      await api.put('/users/me/profile', formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
+
       alert('Perfil atualizado com sucesso!');
-      fetchUserData(); // Recarrega dados
+
+      setAvatarHash(Date.now()); // Atualiza o hash para forçar reload da imagem
+      setAvatarFile(null);
+      setPreviewUrl(null);
+      fetchUserData(); 
     } catch (error: any) {
       alert(error.response?.data?.detail || 'Erro ao atualizar perfil.');
     } finally {
@@ -154,11 +191,25 @@ const handleSaveProfile = async () => {
             })}
           </nav>
           
-          <div className="user-summary">
-            <div className="user-avatar-small">
-              {userData?.name?.charAt(0) || 'U'}
+          <div className="settings-sidebar-card">
+            <div className="settings-sidebar-avatar">
+              {userData?.id ? (
+                <img 
+                  src={`${api.defaults.baseURL}/users/${userData.id}/avatar?t=${avatarHash}`} 
+                  alt="Avatar"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    if (e.currentTarget.parentElement) {
+                      e.currentTarget.parentElement.innerText = userData.name?.charAt(0) || 'User';
+                    }
+                  }}
+                />
+              ) : (
+                userData?.name?.charAt(0) || 'User'
+              )}
             </div>
-            <div className="user-info">
+            
+            <div className="settings-sidebar-info">
               <p className="font-bold">{userData?.name}</p>
               <span>{userData?.company?.name}</span>
             </div>
@@ -172,14 +223,45 @@ const handleSaveProfile = async () => {
           {activeTab === 'profile' && (
             <Card title="Informações Pessoais">
               <div className="form-section">
+                <input 
+                  type='file'
+                  ref={fileInputRef}
+                  className='hidden'
+                  style={{ display: 'none' }}
+                  accept='image/png, image/jpeg' 
+                  onChange={handleFileChange} 
+                />
+
                 <div className="info-box">
-                    <div className="user-avatar-small" style={{background: '#cbd5e1', color: '#64748b'}}>
-                        {userData?.name?.charAt(0)}
+                    <div className="settings-sidebar-avatar" style={{
+                      background: previewUrl ? 'transparent' : '#cbd5e1',
+                      color: '#64748b',
+                      overflow: 'hidden'
+                    }}>
+                      {previewUrl ? (
+                            <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                        ) : userData?.avatar_url ? ( 
+                            <img 
+                            src={`${api.defaults.baseURL}/users/${userData.id}/avatar?t=${avatarHash}`} 
+                            alt="Profile" 
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              // Se a imagem falhar ao carregar, esconde a tag img para mostrar a inicial do nome
+                              e.currentTarget.style.display = 'none';
+                              e.currentTarget.parentElement?.classList.remove('bg-transparent');
+                              e.currentTarget.parentElement?.classList.add('bg-slate-300');
+                            }} />
+                        ) : (
+                            userData?.name?.charAt(0)
+                        )}
                     </div>
                     <div>
                         <strong>Foto de Perfil</strong>
                         <p style={{fontSize: '0.8rem', opacity: 0.8}}>Aceitamos arquivos JPG ou PNG.</p>
                     </div>
+                    <button onClick={() => fileInputRef.current?.click()} className="btn-upload">
+                      Alterar Foto
+                    </button>
                 </div>
 
                 <div className="form-group">
@@ -238,8 +320,8 @@ const handleSaveProfile = async () => {
                 </div>
 
                 <div className="form-actions between">
-                  <button className="text-danger">
-                    <LogOut size={16} style={{marginRight: 5}}/> Desconectar outros
+                  <button onClick={() => alert('Funcionalidade disponível em breve!')} className="text-danger">
+                    <LogOut size={16} style={{marginRight: 5}}/> Desconectar outros dispositivos
                   </button>
                   <Button onClick={handleSavePassword} disabled={loading}>Atualizar Senha</Button>
                 </div>
