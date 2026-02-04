@@ -38,15 +38,12 @@ def get_current_user(
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    print("TOKEN RAW:", token)
     try:
         payload = jwt.decode(
             token,
             JWT_SECRET_KEY,
             algorithms=[JWT_ALGORITHM],
         )
-
-        print("PAYLOAD:", payload)
 
         user_id_raw = payload.get("sub")
         role = payload.get("role")
