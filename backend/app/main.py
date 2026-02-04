@@ -7,9 +7,7 @@ from contextlib import asynccontextmanager
 
 from app.database import engine
 from app.models.base import Base
-from app.routes import auth, products, users, companies, system_admin
-from app.routes import operations
-from app.routes import movements
+from app.routes import auth, products, users, companies, system_admin, operations, movements, dashboard
 
 # =================================================================
 # 1. Configuração do Caminho do Frontend (Dist)
@@ -72,6 +70,7 @@ app.include_router(companies.router)
 app.include_router(system_admin.router)
 app.include_router(movements.router)
 app.include_router(operations.router)
+app.include_router(dashboard.router)
 
 # =================================================================
 # 6. Servindo o Frontend (React/Vite)

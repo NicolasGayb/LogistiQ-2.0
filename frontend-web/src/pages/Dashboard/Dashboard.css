@@ -1,91 +1,362 @@
 /* --- Dashboard.css --- */
 
-/* 1. Espaçamento geral da página */
+:root {
+  /* Paleta Emerald (Verde) */
+  --primary-color: #059669;       /* Emerald 600 */
+  --primary-light: #ecfdf5;       /* Emerald 50 */
+  --primary-hover: #047857;       /* Emerald 700 */
+  
+  /* Paleta Slate (Cinza) */
+  --bg-page: #f8fafc;             /* Slate 50 (Fundo da página) */
+  --text-main: #1e293b;           /* Slate 800 (Títulos) */
+  --text-secondary: #64748b;      /* Slate 500 (Legendas) */
+  --border-color: #e2e8f0;        /* Slate 200 (Bordas) */
+  
+  /* Sombras */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* 1. Container Geral */
 .dashboard-container {
   display: flex;
   flex-direction: column;
-  gap: 40px; /* Aumentado: separa o Header, dos KPIs, das Ações */
+  gap: 32px; /* Espaço consistente vertical */
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
-  padding-bottom: 40px;
+  padding: 24px; /* Padding interno para não colar na borda da tela */
+  animation: fadeIn 0.4s ease-in;
 }
 
-/* ... (estilos do Header mantidos) ... */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-/* 2. GRID DAS MÉTRICAS (Os cards do topo) */
+/* Header (Título e Subtítulo) */
+.dashboard-header h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.dashboard-header p {
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* 2. GRID DAS MÉTRICAS (KPIs) */
 .metrics-grid {
   display: grid;
-  /* Isso cria colunas automáticas. Se o card tiver menos de 280px, ele quebra linha */
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
-  gap: 24px; /* Espaço entre os cards de métrica */
+  gap: 24px;
 }
 
-/* Ajuste interno do Card de Métrica para não ficar tudo colado */
 .metric-card {
-  /* Se você usou o componente Card genérico, isso adiciona comportamento flex */
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 100%;
-  min-height: 120px; /* Garante uma altura mínima bonita */
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .metric-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start; /* Alinha no topo */
-  margin-bottom: 16px; /* ESPAÇO IMPORTANTE: Separa o título do número */
-}
-
-/* 3. GRID DO CONTEÚDO PRINCIPAL */
-.main-content-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr; /* Coluna da esquerda maior que a da direita */
-  gap: 40px; /* Espaço bem grande entre a coluna de Ações e a de Logs */
-  align-items: start;
-}
-
-/* Responsividade: Em telas menores, vira uma coluna só */
-@media (max-width: 1024px) {
-  .main-content-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* 4. GRID DOS BOTÕES DE AÇÃO (Acesso Rápido) */
-.actions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-/* 5. Ajuste visual do Card de Ação (Para o ícone não grudar) */
-.action-card {
-  display: flex;
   align-items: center;
-  gap: 20px; /* ESPAÇO IMPORTANTE: Separa o ícone verde do texto */
-  padding: 24px; /* Mais respiro interno */
+  margin-bottom: 12px; 
 }
 
-.action-icon-box {
-  /* Garante que o ícone tenha um tamanho fixo e não esmague */
-  flex-shrink: 0; 
-  width: 48px;
-  height: 48px;
-  background-color: var(--green-soft, #dcfce7);
-  color: var(--green-main, #16a34a);
-  border-radius: 12px;
+.metric-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+/* Ícone dentro do Card de Métrica */
+.metric-icon {
+  padding: 10px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+/* 3. GRID DO CONTEÚDO PRINCIPAL (Ações + Atividades) */
+.main-content-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* Esquerda larga, Direita estreita */
+  gap: 32px;
+  align-items: start;
+}
+
+/* Títulos de Seção (Acesso Rápido, etc) */
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 16px;
+}
+
+/* Seção de Atividades Recentes */
+.activity-card {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 16px;
+}
+
+.activity-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.activity-item {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.activity-icon-small {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.activity-details {
+  flex: 1;
+}
+
+.empty-state-message {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 15px 10px;
+}
+
+/* 4. GRID DOS BOTÕES DE AÇÃO */
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* 5. Ajuste visual do Card de Ação */
+.action-card {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px; 
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Efeito Hover: Borda verde e fundo levemente verde */
+.action-card:hover {
+  border-color: var(--primary-color);
+  background-color: var(--primary-light);
+  transform: translateY(-2px);
+}
+
+.action-icon-box {
+  flex-shrink: 0; 
+  width: 48px;
+  height: 48px;
+  /* Usa as variáveis agora */
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+/* Quando passa o mouse no card, o ícone fica branco com fundo verde */
+.action-card:hover .action-icon-box {
+  background-color: var(--primary-color);
+  color: white;
+}
+
 .action-info {
-  flex: 1; /* Ocupa o espaço restante */
+  flex: 1;
 }
 
 .action-info h3 {
-  margin: 0 0 4px 0; /* Espacinho entre título e descrição */
+  margin: 0 0 4px 0;
   font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.action-info p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* Seta discreta na direita */
+.action-arrow {
+  color: #cbd5e1;
+  transition: transform 0.2s, color 0.2s;
+}
+
+.action-card:hover .action-arrow {
+  color: var(--primary-color);
+  transform: translateX(4px);
+}
+
+/* --- Responsividade --- */
+@media (max-width: 1024px) {
+  .main-content-grid {
+    grid-template-columns: 1fr; /* Empilha tudo em telas menores */
+  }
+}
+
+/* AdminDashboard.css */
+/* Estilos específicos para o Dashboard do Admin podem ser adicionados aqui */
+/* HEADER: Alinhamento */
+.dashboard-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* BOTÃO DE RELATÓRIO */
+.btn-report {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-report:hover {
+  background-color: var(--primary-hover);
+}
+
+/* VARIANTES DE COR PARA ÍCONES (Para não usar style inline) */
+.icon-box {
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Variante: Primary (Verde) */
+.variant-primary {
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+}
+
+/* Variante: Danger (Vermelho) */
+.variant-danger {
+  background-color: #fef2f2; /* Red 50 */
+  color: #dc2626;            /* Red 600 */
+}
+
+/* Variante: Info (Azul) */
+.variant-info {
+  background-color: #eff6ff; /* Blue 50 */
+  color: #2563eb;            /* Blue 600 */
+}
+
+/* Variante: Neutral (Cinza) */
+.variant-neutral {
+  background-color: #f1f5f9; /* Slate 100 */
+  color: #64748b;            /* Slate 500 */
+}
+
+/* ATIVIDADES RECENTES */
+.activity-item:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.activity-icon-small {
+  padding: 8px;
+  background-color: #f8fafc;
+  border-radius: 50%;
+  height: fit-content;
+  color: var(--text-secondary);
+}
+
+.activity-text {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-main);
+}
+
+.activity-time {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  display: block;
+  margin-top: 4px;
+}
+
+.activity-footer {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--primary-color);
+  cursor: pointer;
+  font-weight: 500;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+/* LOADING SKELETON */
+.skeleton-loader {
+  height: 40px;
+  background-color: #f1f5f9;
+  border-radius: 4px;
+  width: 50%;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
 }
