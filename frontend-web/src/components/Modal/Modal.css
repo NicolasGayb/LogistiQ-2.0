@@ -98,6 +98,12 @@
   color: #94a3b8;
 }
 
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
 /* --- CHECKBOX GROUP (Específico para Empresas) --- */
 .checkbox-group {
   display: flex;

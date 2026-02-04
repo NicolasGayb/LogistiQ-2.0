@@ -1,0 +1,215 @@
+/* ProductList.css */
+
+:root {
+  --primary-color: #059669; /* Emerald 600 */
+  --primary-hover: #047857;
+  --bg-page: #f8fafc;
+  --text-dark: #1e293b;
+  --text-medium: #64748b;
+  --border-color: #e2e8f0;
+}
+
+.product-list-container {
+  padding: 1.5rem;
+  max-width: 1280px;
+  margin: 0 auto;
+  animation: fadeIn 0.3s ease-in;
+}
+
+/* Cabeçalho */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.page-subtitle {
+  color: var(--text-medium);
+  margin-top: 0.25rem;
+}
+
+.btn-add {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-add:hover {
+  background-color: var(--primary-hover);
+}
+
+/* Barra de Busca */
+.search-bar-container {
+  background: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  border: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
+}
+
+.search-input-wrapper {
+  position: relative;
+  max-width: 400px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.6rem 1rem 0.6rem 2.5rem; /* Espaço para o ícone */
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  outline: none;
+  font-size: 0.9rem;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.search-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.1);
+}
+
+/* Tabela */
+.table-container {
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.product-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.product-table th {
+  padding: 1rem;
+  background-color: #f8fafc;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.product-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  color: var(--text-dark);
+  font-size: 0.9rem;
+}
+
+.product-table tr:last-child td {
+  border-bottom: none;
+}
+
+.product-table tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Estilos de Célula Específicos */
+.font-bold { font-weight: 600; }
+.font-mono { font-family: monospace; color: var(--text-medium); }
+.text-right { text-align: right; }
+
+/* Badges e Status */
+.stock-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.normal-stock { color: var(--text-dark); }
+.low-stock { color: #dc2626; font-weight: 600; }
+
+.status-badge {
+  padding: 0.25rem 0.6rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-badge.active { background-color: #d1fae5; color: #047857; }
+.status-badge.inactive { background-color: #f1f5f9; color: #64748b; }
+
+/* Botões de Ação */
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.btn-icon {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #94a3b8;
+}
+
+.btn-icon.edit:hover { background-color: #d1fae5; color: #059669; }
+.btn-icon.delete:hover { background-color: #fee2e2; color: #dc2626; }
+
+/* Estado Vazio */
+.table-empty {
+  padding: 3rem;
+  text-align: center;
+  color: var(--text-medium);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: #cbd5e1;
+}
+
+/* Container para empilhar Data e Nome */
+.cell-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 2px; /* Espacinho entre a data e o nome */
+}
+
+/* Estilo da Data (Principal) */
+.text-date {
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+/* Estilo do Usuário (Secundário) */
+.text-user {
+  font-size: 0.75rem; /* Menor que o texto normal */
+  color: var(--text-medium); /* Cinza mais claro */
+}

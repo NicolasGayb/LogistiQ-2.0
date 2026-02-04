@@ -30,6 +30,8 @@ def list_products(
     Retorna:
     - Lista de produtos da empresa do usuário autenticado.
     '''
+    if current_user.role in [UserRole.SYSTEM_ADMIN]:
+        return ProductService.list_products(db=db)
     return ProductService.list_products(db=db, company_id=current_user.company_id)
 
 @router.get("/{product_id}", response_model=ProductOut)

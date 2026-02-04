@@ -38,5 +38,8 @@ class ProductOut(ProductBase):
     company_id: uuid.UUID
     created_at: datetime
     updated_at: datetime | None
+    updated_by: uuid.UUID | None
+    updated_by_name: str | None = None
+    company_name: str | None = None
 
     model_config = ConfigDict(from_attributes=True)

@@ -1,6 +1,6 @@
 # Importações externas
 from uuid import UUID
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func
 
@@ -21,7 +21,7 @@ class ProductService:
     '''
 
     @staticmethod
-    def list_products(db: Session, company_id: UUID):
+    def list_products(db: Session, company_id: UUID | None = None):
         '''Lista todos os produtos ativos de uma empresa
         
         Args:
@@ -30,9 +30,11 @@ class ProductService:
         Returns:
             List[Product]: Lista de produtos ativos
         '''
+        query = db.query(Product).options(joinedload(Product.company))
+        if company_id:
+            query = query.filter(Product.company_id == company_id)
         # Lista apenas produtos ativos
-        return db.query(Product).filter(
-            Product.company_id == company_id,
+        return query.filter(
             Product.is_active == True
         ).all()
 

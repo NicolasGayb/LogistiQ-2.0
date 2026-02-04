@@ -74,5 +74,17 @@ class Product(Base):
     # Relacionamentos
     company = relationship("Company", back_populates="products")
 
+    updater = relationship("User", foreign_keys=[updated_by])
+
+    @property
+    def company_name(self):
+        '''Retorna o nome da empresa proprietária do produto.'''
+        return self.company.name if self.company else "N/A"
+
+    @property
+    def updated_by_name(self):
+        '''Retorna o nome do usuário que atualizou o produto pela última vez.'''
+        return self.updater.name if self.updater else None
+
     def __repr__(self):
         return f"<Product id={self.id} name={self.name}>"
