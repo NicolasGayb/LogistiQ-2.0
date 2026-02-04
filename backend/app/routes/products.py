@@ -2,13 +2,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from uuid import UUID
+from typing import List
 
 # Importações internas
 from app.models.enum import UserRole
 from app.database import get_db
 from app.core.dependencies import check_admin_or_manager, get_current_user, require_roles
 from app.models.user import User
-from app.schemas.product import ProductCreate, ProductUpdate
+from app.schemas.product import ProductCreate, ProductUpdate, ProductOut
 from app.services.product_service import ProductService
 
 router = APIRouter(prefix="/products", tags=["Products"])
@@ -16,7 +17,7 @@ router = APIRouter(prefix="/products", tags=["Products"])
 # --------------------------------------------------
 # GET products
 # --------------------------------------------------
-@router.get("/")
+@router.get("/", response_model=List[ProductOut])
 def list_products(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -31,7 +32,7 @@ def list_products(
     '''
     return ProductService.list_products(db=db, company_id=current_user.company_id)
 
-@router.get("/{product_id}")
+@router.get("/{product_id}", response_model=ProductOut)
 def get_product(
     product_id: UUID,
     db: Session = Depends(get_db),
@@ -58,7 +59,9 @@ def get_product(
 # --------------------------------------------------
 @router.post(
         "/",
-        status_code=status.HTTP_201_CREATED)
+        status_code=status.HTTP_201_CREATED,
+        response_model=ProductOut
+)
 def create_product(
     product: ProductCreate,
     db: Session = Depends(get_db),
@@ -87,7 +90,7 @@ def create_product(
 # --------------------------------------------------
 # PUT products
 # --------------------------------------------------
-@router.put("/{product_id}")
+@router.put("/{product_id}", response_model=ProductOut)
 def update_product(
     product_id: UUID,
     product_data: ProductUpdate,
@@ -122,7 +125,7 @@ def update_product(
 # PATCH products
 # --------------------------------------------------
 
-@router.patch("/{product_id}/toggle")
+@router.patch("/{product_id}/toggle", response_model=ProductOut)
 def toggle_product(
     product_id: UUID,
     db: Session = Depends(get_db),
@@ -160,5 +163,33 @@ def toggle_product(
                 company_id=current_user.company_id,
                 updated_by=current_user.id
             )
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    
+# --------------------------------------------------
+# DELETE products
+# --------------------------------------------------
+@router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_product(
+    product_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    '''Remove um produto (Logical Delete ou Físico, depende do Service).
+    
+    Parâmetros:
+    - `product_id`: ID do produto a ser removido.
+    - `db`: Sessão do banco de dados.
+    - `current_user`: Usuário autenticado.
+    Retorna:
+    - Nenhum conteúdo (204 No Content) se a remoção for bem-sucedida.
+    '''
+    try:
+        ProductService.delete_product(
+            db=db, 
+            product_id=product_id, 
+            company_id=current_user.company_id
+        )
+        return None # 204 não retorna corpo
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))

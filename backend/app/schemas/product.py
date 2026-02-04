@@ -1,4 +1,5 @@
 # Importação padrão
+from datetime import datetime
 from typing import Optional
 import uuid
 from pydantic import BaseModel, ConfigDict, Field
@@ -30,10 +31,12 @@ class ProductOut(ProductBase):
     id: uuid.UUID
     name: str
     description: str | None
-    sku: str
+    sku: str | None
     price: float
     quantity: int
     is_active: bool
     company_id: uuid.UUID
+    created_at: datetime
+    updated_at: datetime | None
 
     model_config = ConfigDict(from_attributes=True)

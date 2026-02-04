@@ -1,6 +1,6 @@
 # Importações padrão
 import uuid
-from sqlalchemy import Column, Integer, String, Numeric, Boolean, ForeignKey, func
+from sqlalchemy import Column, DateTime, Integer, String, Numeric, Boolean, ForeignKey, func
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -54,13 +54,13 @@ class Product(Base):
     )
 
     created_at = Column(
-        String,
+        DateTime(timezone=True),
         nullable=False,
         server_default=func.now()
     )
 
     updated_at = Column(
-        String,
+        DateTime(timezone=True),
         nullable=True,
         onupdate=func.now()
     )
