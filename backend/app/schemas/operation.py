@@ -24,6 +24,9 @@ class OperationResponseSchema(BaseModel):
     origin: str
     destination: str
     created_at: datetime
+    updated_at: datetime | None = None
+    updated_by: UUID | None = None
+    expected_delivery_date: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

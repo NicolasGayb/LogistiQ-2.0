@@ -2,7 +2,7 @@
 import uuid
 from sqlalchemy import String, DateTime, Enum, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 # Importação de módulos internos
@@ -26,6 +26,7 @@ class Movement(Base):
         previous_status (OperationStatus | None): Status anterior da entidade antes do movimento.
         new_status (OperationStatus | None): Novo status da entidade após o movimento.
         description (str | None): Descrição adicional sobre o movimento.
+        ip_address (str | None): Endereço IP de onde o movimento foi realizado.
         created_by (uuid.UUID | None): Identificador do usuário que criou o movimento.
         created_at (str): Timestamp de quando o movimento foi criado.
     '''
@@ -43,7 +44,7 @@ class Movement(Base):
         index=True
     )
 
-    # 🔑 entidade alvo do movimento
+    # entidade alvo do movimento
     entity_type: Mapped[MovementEntityType] = mapped_column(
         Enum(MovementEntityType),
         nullable=False
@@ -72,10 +73,17 @@ class Movement(Base):
 
     description: Mapped[str | None] = mapped_column(String(500))
 
+    ip_address: Mapped[str | None] = mapped_column(
+        String(45), 
+        nullable=True
+    )
+
     created_by: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("users.id"),
         nullable=True
     )
+
+    updater = relationship("User", foreign_keys=[created_by])
 
     created_at: Mapped[str] = mapped_column(
         DateTime(timezone=True),

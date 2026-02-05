@@ -11,7 +11,11 @@ export function AppNavigation() {
   const { user, loading, isAuthenticated } = useAuthContext();
 
   if (loading) {
-    return <div>Carregando...</div>;
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <span>Loading...</span>
+      </div>
+    );
   }
 
   if (!isAuthenticated) {

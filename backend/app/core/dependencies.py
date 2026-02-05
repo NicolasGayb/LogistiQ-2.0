@@ -1,4 +1,5 @@
 # Importações de terceiros
+from datetime import timezone, datetime
 from fastapi import HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
@@ -95,13 +96,23 @@ def require_roles(roles: List[UserRole]) -> Callable:
     allowed_roles = {role.value for role in roles}
 
     def role_checker(
-        current_user: User = Depends(get_current_user)
+        current_user: User = Depends(get_current_user),
+        db: Session = Depends(get_db)
     ) -> User:
         if current_user.role not in allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Operation not permitted"
+                detail="Acesso Negado: Privilégios insuficientes"
             )
+        
+        try:
+            current_user.last_active_at = datetime.now(timezone.utc)
+            db.add(current_user)
+            db.commit()
+            db.refresh(current_user)
+        except Exception as e:
+            print(f"Erro ao atualizar last_active_at: {e}")
+    
         return current_user
 
     return role_checker

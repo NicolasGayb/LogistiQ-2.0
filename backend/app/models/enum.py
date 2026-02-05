@@ -27,10 +27,14 @@ class MovementType(str, Enum):
     '''Define os tipos de movimentos possíveis na aplicação
 
     OPERATION_CREATED: Movimento criado para uma nova operação
+    CREATION: Movimento indicando criação de um produto
+    INPUT: Movimento indicando entrada de um produto
+    OUTPUT: Movimento indicando saída de um produto
+    ACTIVATED: Movimento indicando que o produto foi ativado
+    DEACTIVATED: Movimento indicando que o produto foi desativado
     STATUS_CHANGED: Movimento indicando mudança de status
-    PRODUCT_CREATED: Movimento criado para um novo produto
-    PRODUCT_UPDATED: Movimento indicando atualização de um produto
-    PRODUCT_DELETED: Movimento indicando exclusão de um produto
+    UPDATED: Movimento indicando atualização de um produto
+    DELETED: Movimento indicando exclusão de um produto
     LOADED: Movimento indicando que o produto foi carregado
     UNLOADED: Movimento indicando que o produto foi descarregado
     IN_TRANSIT: Movimento indicando que o produto está em trânsito
@@ -40,14 +44,15 @@ class MovementType(str, Enum):
     CANCELED: Movimento indicando que a operação foi cancelada
     UPDATED: Movimento indicando que a operação foi atualizada
     COMPLETED: Movimento indicando que a operação foi concluída
-    IN: Movimento indicando entrada de produto
-    OUT: Movimento indicando saída de produto
     '''
     OPERATION_CREATED = "OPERATION_CREATED"
+    CREATION = "CREATION"
+    DELETED = "DELETED"
+    INPUT = "INPUT"
+    OUTPUT = "OUTPUT"
+    ACTIVATED = "ACTIVATED"
+    DEACTIVATED = "DEACTIVATED"
     STATUS_CHANGED = "STATUS_CHANGED"
-    PRODUCT_CREATED = "PRODUCT_CREATED"
-    PRODUCT_UPDATED = "PRODUCT_UPDATED"
-    PRODUCT_DELETED = "PRODUCT_DELETED"
     LOADED = "LOADED"
     UNLOADED = "UNLOADED"
     IN_TRANSIT = "IN_TRANSIT"
@@ -57,8 +62,6 @@ class MovementType(str, Enum):
     CANCELED = "CANCELED"
     UPDATED = "UPDATED"
     COMPLETED = "COMPLETED"
-    IN = "IN"
-    OUT = "OUT"
 
 class OperationStatus(str, Enum):
     '''
@@ -80,4 +83,5 @@ class OperationStatus(str, Enum):
     AT_HUB = "AT_HUB"
     UNLOADED = "UNLOADED"
     COMPLETED = "COMPLETED"
+    DELIVERED = "DELIVERED"
     CANCELED = "CANCELED"

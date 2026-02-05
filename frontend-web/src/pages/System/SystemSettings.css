@@ -1,0 +1,345 @@
+/* --- CONTAINER & LAYOUT --- */
+.system-settings-container {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* --- HEADER DA PÁGINA --- */
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.page-subtitle {
+  color: #64748b;
+  margin-top: 0.5rem;
+}
+
+/* --- NAVEGAÇÃO POR ABAS (TABS) --- */
+.tabs-nav {
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 2rem;
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #64748b;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  color: #10b981;
+}
+
+.tab-btn.active {
+  color: #10b981;
+  border-bottom-color: #10b981;
+}
+
+/* --- CARTÕES (CARDS) --- */
+.settings-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.card-header h3 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 1.1rem;
+}
+
+.card-header p {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+  margin-bottom: 2rem;
+}
+
+/* --- GRID DE CONFIGURAÇÕES (GERAL) --- */
+.settings-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.setting-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.setting-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.setting-desc {
+  margin: 0.25rem 0 0 1.6rem;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.input-number {
+  padding: 0.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  width: 80px;
+  text-align: center;
+  outline: none;
+}
+.input-number:focus {
+  border-color: #10b981;
+}
+
+/* --- TOGGLE SWITCH --- */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1;
+  transition: .4s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #10b981;
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+/* --- RODAPÉ E BOTÕES --- */
+.card-footer {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-save {
+  background-color: #10b981;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-save:hover {
+  background-color: #059669;
+}
+
+.btn-save:disabled {
+  background-color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #10b981;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+/* --- TABELA DE LOGS --- */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.logs-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.logs-table th {
+  text-align: left;
+  padding: 1rem;
+  font-size: 0.85rem;
+  color: #64748b;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.logs-table td {
+  padding: 1rem;
+  font-size: 0.9rem;
+  color: #334155;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.status-dot {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.status-dot.success { background-color: #10b981; }
+.status-dot.warning { background-color: #f59e0b; }
+.status-dot.error { background-color: #ef4444; }
+
+/* --- GRID DE MONITORAMENTO --- */
+.monitor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.monitor-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.monitor-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.monitor-info h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #1e293b;
+}
+
+.status-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  margin-top: 4px;
+}
+
+.status-badge.online { background-color: #d1fae5; color: #047857; }
+.status-badge.warning { background-color: #fef3c7; color: #b45309; }
+.status-badge.error { background-color: #fee2e2; color: #b91c1c; }
+
+.monitor-metric {
+  margin-left: auto;
+  text-align: right;
+  color: #64748b;
+}
+
+/* --- INFORMAÇÕES DO AMBIENTE --- */
+.env-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.env-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.env-label {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.env-value {
+  font-weight: 600;
+  color: #334155;
+}
+
+/* --- UTILITÁRIOS --- */
+.text-red-500 { color: #ef4444; }
+.text-blue-500 { color: #3b82f6; }
+.text-slate-500 { color: #64748b; }
+.text-emerald-600 { color: #059669; }
+.text-emerald-800 { color: #065f46; }
+
+.mt-6 { margin-top: 1.5rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-6 { margin-bottom: 1.5rem; }
+.p-4 { padding: 1rem; }
+.p-8 { padding: 2rem; }
+.p-12 { padding: 3rem; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+.text-center { text-align: center; }
+
+/* Animações */
+.animate-spin { animation: spin 1s linear infinite; }
+
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in { animation: fadeIn 0.3s ease-out; }

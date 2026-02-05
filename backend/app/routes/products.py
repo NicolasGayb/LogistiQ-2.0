@@ -1,5 +1,5 @@
 # Importações externas
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from uuid import UUID
 from typing import List
@@ -13,6 +13,15 @@ from app.schemas.product import ProductCreate, ProductUpdate, ProductOut
 from app.services.product_service import ProductService
 
 router = APIRouter(prefix="/products", tags=["Products"])
+
+def get_real_ip(request: Request) -> str:
+    """Obtém o endereço IP real do cliente, considerando possíveis proxies."""
+    x_forwarded_for = request.headers.get('X-Forwarded-For')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0].strip()
+    else:
+        ip = request.client.host
+    return ip
 
 # --------------------------------------------------
 # GET products
@@ -66,6 +75,7 @@ def get_product(
 )
 def create_product(
     product: ProductCreate,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -83,7 +93,8 @@ def create_product(
             db=db,
             company_id=current_user.company_id,
             created_by=current_user.id,
-            data=product
+            data=product,
+            ip_address=get_real_ip(request)
         )
         return new_product
     except ValueError as e:
@@ -96,6 +107,7 @@ def create_product(
 def update_product(
     product_id: UUID,
     product_data: ProductUpdate,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -108,13 +120,17 @@ def update_product(
     - `current_user`: Usuário autenticado.
     Retorna:
     - O produto atualizado.'''
+    target_company_id = current_user.company_id
+    if current_user.role == UserRole.SYSTEM_ADMIN:
+        target_company_id = None  # System Admin pode atualizar qualquer produto
     try:
         updated_product = ProductService.update_product(
             db=db,
             product_id=product_id,
-            company_id=current_user.company_id,
+            company_id=target_company_id,
             updated_by=current_user.id,
-            data=product_data
+            data=product_data,
+            ip_address=get_real_ip(request)
         )
         return updated_product
     except ValueError as e:
@@ -130,8 +146,9 @@ def update_product(
 @router.patch("/{product_id}/toggle", response_model=ProductOut)
 def toggle_product(
     product_id: UUID,
+    request: Request,
     db: Session = Depends(get_db),
-    current_user: User = Depends(check_admin_or_manager or require_roles([UserRole.SYSTEM_ADMIN]))
+    current_user: User = Depends(require_roles([UserRole.SYSTEM_ADMIN]) or check_admin_or_manager)
 ):
     """
     Ativa ou desativa um produto dependendo do seu estado atual.
@@ -145,25 +162,30 @@ def toggle_product(
     Retorna:
     - O produto atualizado com o novo estado de ativação.
     """
+    target_company_id = current_user.company_id
+    if current_user.role == UserRole.SYSTEM_ADMIN:
+        target_company_id = None  # System Admin pode ativar/desativar qualquer produto
     try:
         # só chega aqui se tiver permissão
         product = ProductService.get_by_id(
-            db=db, product_id=product_id, company_id=current_user.company_id
+            db=db, product_id=product_id, company_id=target_company_id
         )
 
         if product.is_active:
             return ProductService.deactivate_product(
                 db=db,
                 product_id=product_id,
-                company_id=current_user.company_id,
-                updated_by=current_user.id
+                company_id=target_company_id,
+                updated_by=current_user.id,
+                ip_address=get_real_ip(request)
             )
         else:
             return ProductService.activate_product(
                 db=db,
                 product_id=product_id,
-                company_id=current_user.company_id,
-                updated_by=current_user.id
+                company_id=target_company_id,
+                updated_by=current_user.id,
+                ip_address=get_real_ip(request)
             )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -174,6 +196,7 @@ def toggle_product(
 @router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_product(
     product_id: UUID,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -186,11 +209,15 @@ def delete_product(
     Retorna:
     - Nenhum conteúdo (204 No Content) se a remoção for bem-sucedida.
     '''
+    target_company_id = current_user.company_id
+    if current_user.role == UserRole.SYSTEM_ADMIN:
+        target_company_id = None  # System Admin pode deletar qualquer produto
     try:
         ProductService.delete_product(
             db=db, 
             product_id=product_id, 
-            company_id=current_user.company_id
+            company_id=target_company_id,
+            ip_address=get_real_ip(request)
         )
         return None # 204 não retorna corpo
     except ValueError as e:

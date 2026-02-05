@@ -38,6 +38,7 @@ class MovementService:
         operation_id: UUID,
         company_id: UUID,
         created_by: UUID | None = None,
+        ip_address: str | None = None
     ):
         ''' Registra a criação de uma nova operação. 
         
@@ -56,6 +57,7 @@ class MovementService:
             movement_type=MovementType.OPERATION_CREATED,
             description="Operação criada",
             created_by=created_by,
+            ip_address=ip_address,
         )
 
     @staticmethod
@@ -64,9 +66,11 @@ class MovementService:
         *,
         operation_id: UUID,
         company_id: UUID,
+        product_id: UUID | None = None,
         previous_status: OperationStatus,
         new_status: OperationStatus,
         created_by: UUID | None = None,
+        ip_address: str | None = None,
     ):
         ''' Registra a alteração de status de uma operação. 
         
@@ -84,11 +88,13 @@ class MovementService:
             company_id=company_id,
             entity_type=MovementEntityType.OPERATION,
             entity_id=operation_id,
+            product_id=product_id,
             movement_type=MovementType.STATUS_CHANGED,
             previous_status=previous_status,
             new_status=new_status,
             description=f"Status alterado de {previous_status} para {new_status}",
             created_by=created_by,
+            ip_address=ip_address,
         )
 
     @staticmethod
@@ -101,6 +107,7 @@ class MovementService:
         movement_type: MovementType,
         description: str,
         created_by: UUID | None = None,
+        ip_address: str | None = None
     ):
         ''' Registra um evento genérico de movimentação. 
         
@@ -122,6 +129,7 @@ class MovementService:
             movement_type=movement_type,
             description=description,
             created_by=created_by,
+            ip_address=ip_address,
         )
     
     @staticmethod
@@ -166,7 +174,8 @@ class MovementService:
         company_id: UUID,
         movement_type: MovementType,
         description: str | None,
-        created_by: UUID
+        created_by: UUID,
+        ip_address: str | None = None
     ):
         ''' Cria uma movimentação manualmente, validando a existência da entidade.
 
@@ -194,7 +203,8 @@ class MovementService:
             company_id=company_id,
             type=movement_type,
             description=description,
-            created_by=created_by
+            created_by=created_by,
+            ip_address=ip_address
         )
 
         # Persiste a movimentação no banco de dados

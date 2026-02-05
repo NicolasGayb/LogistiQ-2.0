@@ -24,6 +24,7 @@ class Operation(Base):
         status (OperationStatus): Status atual da operação.
         origin (str | None): Local de origem da operação.
         destination (str | None): Local de destino da operação.
+        expected_delivery_date (str | None): Data prevista para entrega.
         created_at (str): Timestamp de criação da operação.
         updated_at (str): Timestamp da última atualização da operação.
         updated_by (uuid.UUID | None): Identificador do usuário que realizou a última atualização.
@@ -54,8 +55,19 @@ class Operation(Base):
         default=OperationStatus.CREATED
     )
 
-    origin: Mapped[str | None] = mapped_column(String(255))
-    destination: Mapped[str | None] = mapped_column(String(255))
+    origin: Mapped[str | None] = mapped_column(
+        String(255), 
+        nullable=True
+    )
+    destination: Mapped[str | None] = mapped_column(
+        String(255), 
+        nullable=True
+    )
+
+    expected_delivery_date: Mapped[str | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True
+    )
 
     created_at: Mapped[str] = mapped_column(
         DateTime(timezone=True),

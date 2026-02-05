@@ -35,7 +35,7 @@ def test_create_manual_movement_success(
     operation = create_operation
 
     payload = {
-        "type": MovementType.IN.value,
+        "type": MovementType.INPUT.value,
         "description": "Movimento criado manualmente"
     }
 
@@ -59,7 +59,7 @@ def test_create_manual_movement_operation_not_found(
     fake_operation_id = uuid.uuid4()
 
     payload = {
-        "type": MovementType.IN.value,
+        "type": MovementType.INPUT.value,
         "description": "Teste inválido"
     }
 
@@ -75,7 +75,7 @@ def test_create_manual_movement_unauthorized(client, create_operation):
     operation = create_operation
 
     payload = {
-        "type": MovementType.OUT.value,
+        "type": MovementType.OUTPUT.value,
         "description": "Sem token"
     }
 

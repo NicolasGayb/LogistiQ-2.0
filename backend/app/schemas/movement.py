@@ -21,6 +21,7 @@ class MovementResponse(MovementBase):
     entity_type: MovementEntityType
     company_id: UUID
     created_by: UUID | None = None
+    ip_address: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -119,6 +119,10 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             headers={"WWW-Authenticate": "Bearer"},
         )
     
+    user.last_active_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(user)
+
     token = create_access_token(
         subject=user.id,
         role=user.role,
@@ -173,9 +177,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 def register(
     data: RegisterRequest,
     db: Session = Depends(get_db),
-    current_user: User = Depends(
-        require_roles([UserRole.SYSTEM_ADMIN, UserRole.ADMIN])
-    )
+    current_user: User = Depends(require_roles([UserRole.SYSTEM_ADMIN, UserRole.ADMIN]))
 ):
     # Email duplicado
     if db.query(User).filter(User.email == data.email).first():

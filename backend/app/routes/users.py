@@ -7,6 +7,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Response, UploadFile, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from datetime import datetime, timedelta, timezone
 
 # Importações internas
 from app.database import get_db
@@ -493,3 +494,22 @@ def update_my_company_settings(
     db.refresh(company)
 
     return {"message": f"Configurações da empresa {company.name} atualizadas com sucesso."}
+
+@router.get("/active/last-5-min", response_model=int)
+def count_active_users_last_five_minutes(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        require_roles([UserRole.SYSTEM_ADMIN, UserRole.ADMIN])
+    )
+):
+    five_minutes_ago = datetime.now(timezone.utc) - timedelta(minutes=5)
+
+    active_users_count = (
+        db.query(User)
+        .filter(User.is_active.is_(True))
+        .filter(User.last_active_at.is_not(None))
+        .filter(User.last_active_at >= five_minutes_ago)
+        .count()
+    )
+
+    return active_users_count
