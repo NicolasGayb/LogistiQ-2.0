@@ -1,5 +1,6 @@
 import { useAuthContext } from '../../context/AuthContext';
 import { useEffect, useState } from 'react';
+import { logoutService } from '../../services/authService';
 import './Header.css';
 import { FaBell, FaUserCircle } from 'react-icons/fa';
 import api from '../../api/client';
@@ -20,6 +21,15 @@ export function Header({ title }: HeaderProps) {
   const avatarUrl = user?.id 
     ? `${api.defaults.baseURL}/users/${user.id}/avatar` 
     : null;
+
+  const handleLogout = async () => {
+    await logoutService();
+
+    if (logout) logout();
+
+    localStorage.removeItem('access_token');
+    window.location.href = '/login';
+  };
 
   return (
     <header className="header">
@@ -46,7 +56,7 @@ export function Header({ title }: HeaderProps) {
           )}
           <span className="header-username">{user?.name}</span>
           <div className="header-dropdown">
-            <button onClick={logout}>Sair</button>
+            <button onClick={handleLogout}>Sair</button>
           </div>
         </div>
       </div>

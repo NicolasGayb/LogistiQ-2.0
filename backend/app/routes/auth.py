@@ -1,7 +1,7 @@
 # Importações padrão
 import secrets
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
@@ -14,6 +14,8 @@ from app.core.security import create_access_token, hash_password, verify_passwor
 from app.core.dependencies import get_current_user, require_roles
 from app.models.enum import UserRole
 from app.models.company import Company
+from app.services.movement_service import MovementEntityType, MovementType, MovementService
+from app.core.utils import get_real_ip
 
 # Definição do roteador
 router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -105,7 +107,8 @@ def get_me(current_user: User = Depends(get_current_user)):
             }
         },
         response_model=TokenResponse)
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    
     user = (
         db.query(User)
         .filter(User.email == form_data.username, User.is_active == True)
@@ -119,6 +122,28 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             headers={"WWW-Authenticate": "Bearer"},
         )
     
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User account is inactive",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Registrar movimento de login
+    try:
+        MovementService.create_manual(
+            db=db,
+            company_id=user.company_id,
+            entity_type=MovementEntityType.USER,
+            entity_id=user.id,
+            movement_type=MovementType.LOGIN,
+            description=f"Login bem-sucedido para o usuário {user.email}",
+            created_by=user.id,
+            ip_address=get_real_ip(request)
+        )
+    except Exception as e:
+        print(f"Failed to log login movement for user {user.id}: {e}")
+
     user.last_active_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(user)
@@ -175,6 +200,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     status_code=status.HTTP_201_CREATED
 )
 def register(
+    request: Request,
     data: RegisterRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles([UserRole.SYSTEM_ADMIN, UserRole.ADMIN]))
@@ -259,17 +285,29 @@ def register(
             company_id=company_id,
             is_active=True
         )
-
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-
-    except IntegrityError:
-        db.rollback()
+    except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Database integrity error"
+            detail="Error creating user instance"
         )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    # Criar movimento de criação de usuário
+    try:
+        MovementService.create_manual(
+            db=db,
+            entity_type=MovementEntityType.USER,
+            entity_id=user.id,
+            company_id=company_id,
+            movement_type=MovementType.CREATION,
+            description=f"User {user.email} created",
+            created_by=current_user.id,
+            ip_address=get_real_ip(request)
+        )
+    except Exception as e:
+        print(f"Failed to log user creation movement for user {user.id}: {e}")
 
     # Token
     token = create_access_token(
@@ -282,7 +320,6 @@ def register(
         access_token=token,
         token_type="bearer"
     )
-
 
 # -----------------------
 # Esqueci minha senha
@@ -358,6 +395,7 @@ def forgot_password(
             }
         })
 def reset_password(
+    request: Request,
     data: ResetPasswordRequest,
     db: Session = Depends(get_db)
 ):
@@ -377,10 +415,56 @@ def reset_password(
             detail="Token expirado"
         )
 
-    user.hashed_password = hash_password(data.new_password)
+    user.password_hash = hash_password(data.new_password)
     user.reset_password_token = None
     user.reset_password_token_expires_at = None
+
+    # Movimento de redefinição de senha
+    try:
+        MovementService.create_manual(
+            db=db,
+            company_id=user.company_id,
+            entity_type=MovementEntityType.USER,
+            entity_id=user.id,
+            movement_type=MovementType.PASSWORD_CHANGE,
+            description="Senha redefinida via token",
+            created_by=user.id,
+            ip_address=get_real_ip(request)
+        )
+    except Exception as e:
+        print(f"Failed to log password reset movement for user {user.id}: {e}")
 
     db.commit()
 
     return {"message": "Senha redefinida com sucesso"}
+
+# -----------------------
+# Logout
+# -----------------------
+@router.post(
+        "/logout",
+        summary="Logout do usuário",
+        description="Realiza o logout do usuário. (Funcionalidade a ser implementada conforme necessário)",
+        status_code=status.HTTP_200_OK
+)
+def logout(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Movimento de logout
+    try:
+        MovementService.create_manual(
+            db=db,
+            company_id=current_user.company_id,
+            entity_type=MovementEntityType.USER,
+            entity_id=current_user.id,
+            movement_type=MovementType.LOGOUT,
+            description=f"User {current_user.email} logged out",
+            created_by=current_user.id,
+            ip_address=get_real_ip(request)
+        )
+    except Exception as e:
+        print(f"Failed to log logout movement for user {current_user.id}: {e}")
+
+    return {"message": "Logout successful"}

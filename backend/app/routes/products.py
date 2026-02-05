@@ -11,17 +11,9 @@ from app.core.dependencies import check_admin_or_manager, get_current_user, requ
 from app.models.user import User
 from app.schemas.product import ProductCreate, ProductUpdate, ProductOut
 from app.services.product_service import ProductService
+from app.core.utils import get_real_ip
 
 router = APIRouter(prefix="/products", tags=["Products"])
-
-def get_real_ip(request: Request) -> str:
-    """Obtém o endereço IP real do cliente, considerando possíveis proxies."""
-    x_forwarded_for = request.headers.get('X-Forwarded-For')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0].strip()
-    else:
-        ip = request.client.host
-    return ip
 
 # --------------------------------------------------
 # GET products

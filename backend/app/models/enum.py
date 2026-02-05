@@ -19,9 +19,12 @@ class MovementEntityType(str, Enum):
     
     OPERATION: Movimento relacionado a uma operação
     PRODUCT: Movimento relacionado a um produto
+    USER: Movimento relacionado a um usuário
     '''
     OPERATION = "OPERATION"
     PRODUCT = "PRODUCT"
+    USER = "USER"
+    COMPANY = "COMPANY"
 
 class MovementType(str, Enum):
     '''Define os tipos de movimentos possíveis na aplicação
@@ -44,10 +47,21 @@ class MovementType(str, Enum):
     CANCELED: Movimento indicando que a operação foi cancelada
     UPDATED: Movimento indicando que a operação foi atualizada
     COMPLETED: Movimento indicando que a operação foi concluída
+
+    LOGIN: Movimento indicando que um usuário fez login
+    LOGOUT: Movimento indicando que um usuário fez logout
+    PASSWORD_CHANGE: Movimento indicando que um usuário mudou sua senha
+    ROLE_CHANGE: Movimento indicando que um usuário teve seu papel alterado
     '''
+    # Movimentos genéricos
     OPERATION_CREATED = "OPERATION_CREATED"
     CREATION = "CREATION"
     DELETED = "DELETED"
+    CANCELED = "CANCELED"
+    UPDATED = "UPDATED"
+    COMPLETED = "COMPLETED"
+
+    # Movimentos relacionados a operações
     INPUT = "INPUT"
     OUTPUT = "OUTPUT"
     ACTIVATED = "ACTIVATED"
@@ -59,9 +73,12 @@ class MovementType(str, Enum):
     ARRIVED_AT_HUB = "ARRIVED_AT_HUB"
     DELAY_REPORTED = "DELAY_REPORTED"
     INCIDENT_REPORTED = "INCIDENT_REPORTED"
-    CANCELED = "CANCELED"
-    UPDATED = "UPDATED"
-    COMPLETED = "COMPLETED"
+
+    # Movimentos relacionados a usuários
+    LOGIN = "LOGIN"
+    LOGOUT = "LOGOUT"
+    PASSWORD_CHANGE = "PASSWORD_CHANGE"
+    ROLE_CHANGE = "ROLE_CHANGE"
 
 class OperationStatus(str, Enum):
     '''

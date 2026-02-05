@@ -40,7 +40,7 @@ class Movement(Base):
 
     company_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("companies.id"),
-        nullable=False,
+        nullable=True,
         index=True
     )
 

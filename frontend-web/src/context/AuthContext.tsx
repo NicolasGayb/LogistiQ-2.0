@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import api from '../api/client';
 import type { LoginResponse } from '../types/auth';
 import type { User } from '../types/user';
-import { getMe } from '../services/auth.service';
+import { getMe } from '../services/authService';
 
 
 interface AuthContextData {

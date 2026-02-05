@@ -18,6 +18,7 @@ from app.core.security import hash_password, verify_password
 from app.schemas.user import UserChangePassword, UserCreate, UserRegisterWithToken, UserResponse, UserUpdate
 from app.models.company import Company
 from app.schemas.company import CompanySettingsUpdate
+from app.services.movement_service import MovementService, MovementEntityType, MovementType
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -152,6 +153,23 @@ def auto_create_user(
         company_id=company.id
     )
 
+    # Movimentação
+    try:
+        MovementService.create_manual(
+            db=db,
+            entity_id=new_user.id,
+            entity_type=MovementEntityType.USER,
+            company_id=new_user.company_id,
+            movement_type=MovementType.CREATION,
+            description=f"Usuário {new_user.email} criado automaticamente",
+            created_by=new_user.id,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating movement for auto user creation: {str(e)}"
+        )
+
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -200,6 +218,23 @@ def create_user(
         role=data.role,
         company_id=data.company_id
     )
+
+    # Movimentação
+    try:
+        MovementService.create_manual(
+            db=db,
+            entity_id=new_user.id,
+            entity_type=MovementEntityType.USER,
+            company_id=new_user.company_id,
+            movement_type=MovementType.CREATION,
+            description=f"Usuário {new_user.email} criado por {current_user.email}",
+            created_by=current_user.id,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating movement for user creation: {str(e)}"
+        )
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -248,8 +283,27 @@ def update_user(
     if data.password:
         user.password_hash = hash_password(data.password)
 
+    # Movimentação
+    try:
+        MovementService.create_manual(
+            db=db,
+            entity_id=user.id,
+            entity_type=MovementEntityType.USER,
+            company_id=user.company_id,
+            movement_type=MovementType.UPDATED,
+            description=f"Usuário {user.email} atualizado por {current_user.email}",
+            created_by=current_user.id,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating movement for user update: {str(e)}"
+        )
+    
+    # Salvar alterações
     db.commit()
     db.refresh(user)
+
     return user
 
 # ------------------------------------------
@@ -278,9 +332,19 @@ def delete_user(
 
     if not user:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found")
-    
+
     try:
         db.delete(user)
+        # Movimentação
+        MovementService.create_manual(
+            db=db,
+            entity_id=user.id,
+            entity_type=MovementEntityType.USER,
+            company_id=user.company_id,
+            movement_type=MovementType.DELETED,
+            description=f"Usuário {user.email} deletado por {current_user.email}",
+            created_by=current_user.id,
+        )
         db.commit()
     except IntegrityError as e:
         db.rollback()
@@ -292,42 +356,6 @@ def delete_user(
 # ------------------------------------------
 # PATCH Users
 # ------------------------------------------
-@router.patch("/change-password/{user_id}", response_model=str)
-def change_user_password(
-    user_id: UUID,
-    new_password: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(
-        require_roles([UserRole.SYSTEM_ADMIN, UserRole.ADMIN, UserRole.MANAGER, UserRole.USER])
-    )
-):
-    '''Altera a senha de um usuário específico.
-    
-    Args:
-        user_id (UUID): ID do usuário cuja senha será alterada.
-        new_password (str): Nova senha para o usuário.
-        db (Session, optional): Sessão do banco de dados. Padrão é Depends(get_db).
-        current_user (User, optional): Usuário autenticado. Padrão é Depends(require_roles(...)).
-    Returns:
-        str: Mensagem de confirmação da alteração da senha.
-    Raises:
-        HTTPException: Se o usuário não for encontrado ou se o usuário atual não tiver permissão para alterar a senha do usuário solicitado.
-    '''
-    user = db.query(User).filter(User.id == user_id).first()
-
-    if not user:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found")
-    
-    if current_user.role != UserRole.SYSTEM_ADMIN:
-        if user.id != current_user.id:
-            raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Not authorized to change this user's password")
-        
-    user.password_hash = hash_password(new_password)
-    db.commit()
-    db.refresh(user)
-
-    return f"Password for user with ID {user_id} has been changed."
-
 @router.patch("/toggle-user/{user_id}", response_model=str)
 def toggle_user_active_status(
     user_id: UUID,
@@ -357,6 +385,24 @@ def toggle_user_active_status(
             raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Not authorized to toggle this user")
     
     user.is_active = not user.is_active
+
+    # Movimentação
+    try:
+        MovementService.create_manual(
+            db=db,
+            entity_id=user.id,
+            entity_type=MovementEntityType.USER,
+            company_id=user.company_id,
+            movement_type=MovementType.STATUS_CHANGED,
+            description=f"Usuário {user.email} {'ativado' if user.is_active else 'desativado'} por {current_user.email}",
+            created_by=current_user.id,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating movement for toggling user status: {str(e)}"
+        )
+
     db.commit()
     db.refresh(user)
 
@@ -401,6 +447,23 @@ def update_my_profile(
         # Salva os dados binários e o content_type no banco
         current_user.profile_image = file_content
         current_user.content_type = avatar.content_type # ex: "image/png"
+
+    # 3. Cria movimento de atualização de perfil
+    try:
+        MovementService.create_manual(
+            db=db,
+            entity_id=current_user.id,
+            entity_type=MovementEntityType.USER,
+            company_id=current_user.company_id,
+            movement_type=MovementType.UPDATED,
+            description=f"Perfil do usuário {current_user.email} atualizado",
+            created_by=current_user.id,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating movement for profile update: {str(e)}"
+        )
 
     db.commit()
     db.refresh(current_user)
@@ -461,8 +524,27 @@ def change_my_password(
 
     # 3. Salva a nova senha
     current_user.password_hash = hash_password(data.new_password)
+
+    # 4. Cria movimento de troca de senha
+    try:
+        MovementService.create_manual(
+            db=db,
+            entity_id=current_user.id,
+            entity_type=MovementEntityType.USER,
+            company_id=current_user.company_id,
+            movement_type=MovementType.PASSWORD_CHANGE,
+            description=f"Senha do usuário {current_user.email} alterada",
+            created_by=current_user.id,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating movement for password change: {str(e)}"
+        )
+    
     db.commit()
     db.refresh(current_user)
+
     return {"message": f"Senha do usuário {current_user.name} alterada com sucesso."}
 
 # Rota para atualizar configurações da empresa do usuário logado (apenas SYSTEM_ADMIN, ADMIN e MANAGER)
@@ -490,6 +572,23 @@ def update_my_company_settings(
     if data.stock_alert_limit is not None: 
         company.stock_alert_limit = data.stock_alert_limit
 
+    # Movimentação
+    try:
+        MovementService.create_manual(
+            db=db,
+            entity_id=company.id,
+            entity_type=MovementEntityType.COMPANY,
+            company_id=company.id,
+            movement_type=MovementType.UPDATED,
+            description=f"Configurações da empresa {company.name} atualizadas por {current_user.email}",
+            created_by=current_user.id,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating movement for company settings update: {str(e)}"
+        )
+
     db.commit()
     db.refresh(company)
 
@@ -502,13 +601,13 @@ def count_active_users_last_five_minutes(
         require_roles([UserRole.SYSTEM_ADMIN, UserRole.ADMIN])
     )
 ):
-    five_minutes_ago = datetime.now(timezone.utc) - timedelta(minutes=5)
+    cutoff_time = datetime.now(timezone.utc) - timedelta(minutes=5)
 
     active_users_count = (
         db.query(User)
         .filter(User.is_active.is_(True))
-        .filter(User.last_active_at.is_not(None))
-        .filter(User.last_active_at >= five_minutes_ago)
+        .filter(User.last_active_at != None)
+        .filter(User.last_active_at >= cutoff_time)
         .count()
     )
 

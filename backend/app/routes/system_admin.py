@@ -1,8 +1,9 @@
 # Importações externas
+from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import desc, func
+from sqlalchemy import desc, func, text
 
 
 # Importações internas
@@ -17,6 +18,7 @@ from app.models.enum import UserRole, MovementType
 from app.models.movement import Movement
 from app.models.operation import Operation
 from app.models.user import User
+from app.routes.users import count_active_users_last_five_minutes
 
 # Prefixo e Tags
 router = APIRouter(prefix="/system-admins", tags=["System Admins"])
@@ -90,9 +92,14 @@ def get_system_stats(
     # Verifica se a tabela já tem a coluna nova, senão retorna 0
     delayed_ops = 0
 
-    # 3. Conexões Ativas
-    active_connections = db.query(User).filter(
-        User.last_active_at >= func.now() - func.interval('5 minutes')
+    cutoff_time = datetime.now(timezone.utc) - timedelta(minutes=5)
+    
+    active_connections = (
+        db.query(User)
+        .filter(User.is_active == True)
+        .filter(User.last_active_at.is_not(None))
+        .filter(User.last_active_at >= cutoff_time)
+        .count()
     )
     
     try:
@@ -107,9 +114,11 @@ def get_system_stats(
     # 3. Status do Banco de Dados (Simples verificação se query roda)
     db_status = "online"
     try:
-        db.execute(func.select(1))
-    except Exception:
+        db.execute(text("SELECT * FROM users LIMIT 1"))
+    except Exception as e:
+        print(f"Database connection error at {datetime.now()}: {e}")
         db_status = "offline"
+        db.rollback()
 
     return {
         "api_status": "online",
@@ -119,7 +128,7 @@ def get_system_stats(
         "metrics": {
             "total_operations": total_ops,
             "delayed_operations": delayed_ops,
-            "active_connections": active_connections.count()
+            "active_connections": active_connections
         }
     }
 
