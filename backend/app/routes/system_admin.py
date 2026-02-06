@@ -109,12 +109,12 @@ def get_system_stats(
             Operation.status != "DELIVERED"
         ).count()
     except Exception:
-        pass # Coluna ainda não existe ou erro de query
+        db.rollback()  # Em caso de erro (ex: coluna não existe), garante que a sessão está limpa
 
     # 3. Status do Banco de Dados (Simples verificação se query roda)
     db_status = "online"
     try:
-        db.execute(text("SELECT * FROM users LIMIT 1"))
+        db.execute(text("SELECT 1"))
     except Exception as e:
         print(f"Database connection error at {datetime.now()}: {e}")
         db_status = "offline"

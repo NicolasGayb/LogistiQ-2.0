@@ -12,6 +12,7 @@ from app.core.config import JWT_ALGORITHM, JWT_SECRET_KEY
 from app.database import get_db
 from app.models.user import User
 from app.models.enum import UserRole
+from app.models.system_setting import SystemSetting
 
 # Definição do esquema OAuth2
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
@@ -70,6 +71,16 @@ def get_current_user(
 
     if role != UserRole.SYSTEM_ADMIN.value:
         query = query.filter(User.company_id == company_id)
+
+    settings = db.query(SystemSetting).first()
+
+    if settings and settings.maintenance_mode:
+        if role != UserRole.SYSTEM_ADMIN.value:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="O sistema está em modo de manutenção. Por favor, tente novamente mais tarde.",
+                headers={"Retry-After": "3600"}
+            )
 
     user = query.first()
 

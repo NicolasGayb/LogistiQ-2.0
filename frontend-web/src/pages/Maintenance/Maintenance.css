@@ -1,0 +1,127 @@
+/* Container que ocupa a tela toda - Agora em tema claro */
+.maintenance-container {
+  position: fixed; /* Garante que ignore margens do body/root */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  background-color: #ffffff;
+  color: #111827;
+  font-family: 'Manrope', system-ui, sans-serif;
+  
+  padding: 1rem;
+  box-sizing: border-box; /* O SEGREDO: Faz o padding contar DENTRO do tamanho total */
+  overflow: hidden; /* Mata qualquer barra de rolagem excedente */
+  z-index: 9999; /* Garante que fique por cima de qualquer menu ou header */
+}
+
+/* O Cartão Central - Estilo "Feature Card" */
+.maintenance-card {
+  background-color: #f9fafb; /* Fundo cinza bem claro (Gray 50) */
+  border: 1px solid #e5e7eb; /* Borda sutil */
+  border-radius: 1.5rem; /* Arredondamento suave */
+  padding: 3rem 2rem;
+  max-width: 550px;
+  width: 100%;
+  text-align: center;
+  /* Sombra suave e difusa */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Área do Ícone */
+.icon-wrapper {
+  background-color: #fef3c7; /* Amber 100 - Fundo claro para o ícone */
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem auto;
+}
+
+.icon-maintenance {
+  color: #d97706; /* Amber 600 - Cor de alerta mais sólida */
+  animation: pulse 2.5s infinite;
+}
+
+/* Tipografia - Seguindo o estilo Hero */
+.maintenance-title {
+  font-size: 2rem; /* 32px */
+  font-weight: 800; /* Extra bold */
+  line-height: 1.1;
+  letter-spacing: -0.04em; /* Tight tracking do Hero */
+  margin-bottom: 1rem;
+  color: #111827;
+}
+
+.maintenance-text {
+  color: #4b5563; /* Gray 600 */
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+}
+
+/* Botão de Ação - Estilo "Hero Button" */
+.btn-maintenance {
+  background-color: #16a34a; /* Green 600 */
+  color: white;
+  border: none;
+  padding: 0.9rem 2rem;
+  border-radius: 999px; /* Pill shape total */
+  font-size: 1rem;
+  font-weight: 700; /* Bold */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 6px -1px rgba(22, 163, 74, 0.2);
+}
+
+.btn-maintenance:hover {
+  background-color: #15803d; /* Green 700 */
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(22, 163, 74, 0.3);
+}
+
+.btn-maintenance:active {
+  transform: translateY(0);
+}
+
+/* Rodapézinho */
+.maintenance-footer {
+  margin-top: 2rem;
+  font-size: 0.875rem;
+  color: #9ca3af; /* Gray 400 */
+  font-weight: 500;
+}
+
+/* Animações */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsividade básica */
+@media (max-width: 640px) {
+  .maintenance-title {
+    font-size: 1.75rem;
+  }
+  .maintenance-card {
+    padding: 2rem 1.5rem;
+  }
+}

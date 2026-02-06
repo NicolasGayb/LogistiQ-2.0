@@ -19,6 +19,7 @@ from app.schemas.user import UserChangePassword, UserCreate, UserRegisterWithTok
 from app.models.company import Company
 from app.schemas.company import CompanySettingsUpdate
 from app.services.movement_service import MovementService, MovementEntityType, MovementType
+from app.models.system_setting import SystemSetting
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -130,6 +131,14 @@ def auto_create_user(
     Raises:
         HTTPException: Se as senhas não coincidirem, email já estiver cadastrado ou token for inválido.
     '''
+    settings = db.query(SystemSetting).first()
+
+    if settings and settings.allow_registrations == False:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="O registro de novos usuários está fechado no momento. Por favor, entre em contato com o administrador do sistema."
+        )
+
     # Confere se senhas coincidem
     if data.password != data.confirm_password:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Senhas não coincidem")
@@ -197,10 +206,18 @@ def create_user(
     Raises:
         HTTPException: Se o email já estiver cadastrado ou se o ADMIN tentar criar um usuário fora de sua empresa ou com role inválida.
     '''
+    settings = db.query(SystemSetting).first()
+
+    if settings and settings.allow_registrations == False:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="A criação de novos usuários está fechada no momento. Entre em contato com o administrador do sistema."
+        )
+
     # ADMIN só pode criar usuários da própria empresa
     if current_user.role == UserRole.ADMIN:
         if data.company_id != current_user.company_id:
-            raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Not authorized to create user for this company")
+            raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Você não possui permissão para criar usuários fora da sua empresa.")
         if data.role != UserRole.USER:
             raise HTTPException(status.HTTP_403_FORBIDDEN, detail="ADMIN só pode criar usuários USER")
 
@@ -254,6 +271,7 @@ def update_user(
     )
 ):
     '''Atualiza os detalhes de um usuário específico com base na role do usuário atual.
+    Não é possível ativar/desativar usuários por este endpoint, apenas atualizar nome, email, role e senha.
     
     Args:
         user_id (UUID): ID do usuário a ser atualizado.
@@ -328,6 +346,14 @@ def delete_user(
     Raises:
         HTTPException: Se o usuário não for encontrado.
     '''
+    settings = db.query(SystemSetting).first()
+
+    if settings and settings.allow_registrations == False:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="A deleção de usuários está fechada no momento. Entre em contato com o administrador do sistema."
+        )
+
     user = db.query(User).filter(User.id == user_id).first()
 
     if not user:
@@ -375,14 +401,22 @@ def toggle_user_active_status(
     Raises:
         HTTPException: Se o usuário não for encontrado ou se o usuário atual não tiver permissão para alterar o status do usuário solicitado.
     '''
+    settings = db.query(SystemSetting).first()
+    
+    if settings and settings.allow_registrations == False:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="A ativação de usuários está fechada no momento. Entre em contato com o administrador do sistema."
+        )
+
     user = db.query(User).filter(User.id == user_id).first()
 
     if not user:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado")
     
     if current_user.role == UserRole.ADMIN:
         if user.company_id != current_user.company_id:
-            raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Not authorized to toggle this user")
+            raise HTTPException(status.HTTP_403_FORBIDDEN, detail="Não autorizado a alterar este usuário")
     
     user.is_active = not user.is_active
 
@@ -400,14 +434,14 @@ def toggle_user_active_status(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error creating movement for toggling user status: {str(e)}"
+            detail=f"Erro ao criar movimentação para alteração do status do usuário: {str(e)}"
         )
 
     db.commit()
     db.refresh(user)
 
-    status_str = "activated" if user.is_active else "deactivated"
-    return f"User with ID {user_id} has been {status_str}."
+    status_str = "ativado" if user.is_active else "desativado"
+    return f"Usuário com ID {user_id} foi {status_str}."
 
 # ----------------------------------------------------------------------
 # Contexto: Eu configurando meu perfil
@@ -462,7 +496,7 @@ def update_my_profile(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error creating movement for profile update: {str(e)}"
+            detail=f"Erro ao criar movimentação para atualização do perfil: {str(e)}"
         )
 
     db.commit()
@@ -493,7 +527,7 @@ def get_user_avatar(
     user = db.query(User).filter(User.id == user_id).first()
     
     if not user or not user.profile_image:
-        raise HTTPException(status_code=404, detail="Imagem nao encontrada.")
+        raise HTTPException(status_code=404, detail="Imagem não encontrada.")
     
     return Response(content=user.profile_image, media_type=user.content_type)
 
@@ -539,7 +573,7 @@ def change_my_password(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error creating movement for password change: {str(e)}"
+            detail=f"Erro ao criar movimentação para troca de senha: {str(e)}"
         )
     
     db.commit()
@@ -586,7 +620,7 @@ def update_my_company_settings(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error creating movement for company settings update: {str(e)}"
+            detail=f"Erro ao criar movimentação para atualização das configurações da empresa: {str(e)}"
         )
 
     db.commit()

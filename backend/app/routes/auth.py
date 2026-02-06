@@ -16,6 +16,7 @@ from app.models.enum import UserRole
 from app.models.company import Company
 from app.services.movement_service import MovementEntityType, MovementType, MovementService
 from app.core.utils import get_real_ip
+from app.models.system_setting import SystemSetting
 
 # Definição do roteador
 router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -108,12 +109,23 @@ def get_me(current_user: User = Depends(get_current_user)):
         },
         response_model=TokenResponse)
 def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    
+   
     user = (
         db.query(User)
         .filter(User.email == form_data.username, User.is_active == True)
         .first()
     )
+
+    settings = db.query(SystemSetting).first()
+
+    if settings and settings.maintenance_mode:
+        if user and user.role != UserRole.SYSTEM_ADMIN.value:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="O sistema está em modo de manutenção. Por favor, tente novamente mais tarde.",
+                headers={"Retry-After": "3600"}
+            )
+
 
     if not user or not verify_password(form_data.password, user.password_hash):
         raise HTTPException(
@@ -205,6 +217,14 @@ def register(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles([UserRole.SYSTEM_ADMIN, UserRole.ADMIN]))
 ):
+    settigns = db.query(SystemSetting).first()
+
+    if settigns and settigns.allow_registrations == False:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="O registro de novos usuários está fechado no momento. Por favor, entre em contato com o administrador do sistema."
+        )
+
     # Email duplicado
     if db.query(User).filter(User.email == data.email).first():
         raise HTTPException(

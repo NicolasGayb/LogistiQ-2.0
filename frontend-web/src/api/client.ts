@@ -34,6 +34,16 @@ api.interceptors.response.use(
          window.location.href = '/login';
       }
     }
+    if (error.response?.status === 503) {
+      // Redireciona para a página de manutenção
+      if (!window.location.pathname.includes('/maintenance')) {
+        // Limpa token e dados de usuário para evitar loops de erro
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user');
+        sessionStorage.clear();
+        window.location.href = '/maintenance';
+      }
+    }
     return Promise.reject(error);
   }
 );

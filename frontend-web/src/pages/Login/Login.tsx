@@ -23,12 +23,20 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
     try {
       await login(email, password);
       navigate('/dashboard', { replace: true });
-    } catch (err) {
+    } catch (err: any) {
+      // Verifica se é erro 503 (Manutenção)
+      if (err.response && err.response.status === 503) {
+        // Se for manutenção, não fazemos nada (o interceptor redireciona)
+        // Mantemos loading true para não "piscar" a tela
+        return; 
+      } 
+      
+      // Se for outro erro (ex: 401 senha errada), mostramos a mensagem
       setError('Email ou senha incorretos.');
-    } finally {
       setLoading(false);
     }
   };
