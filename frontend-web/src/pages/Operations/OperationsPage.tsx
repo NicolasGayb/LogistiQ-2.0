@@ -56,21 +56,33 @@ export default function OperationsPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fazemos as duas requisições em paralelo para ser mais rápido
       const [kpiRes, listRes] = await Promise.all([
         api.get('/operations/kpis'),
-        api.get('/operations', { 
+        api.get('/operations/', { 
           params: { 
             status: statusFilter || undefined, 
             type: typeFilter || undefined,
-            start_date: dateFilter || undefined // Assume que o filtro é data de inicio
+            start_date: dateFilter || undefined 
           } 
         })
       ]);
-      setKpis(kpiRes.data);
-      setOperations(listRes.data);
+
+      // Atualiza KPIs
+      if (kpiRes.data) {
+        setKpis(kpiRes.data);
+      }
+
+      // BLINDAGEM: Só atualiza operations se for um Array
+      if (Array.isArray(listRes.data)) {
+        setOperations(listRes.data);
+      } else {
+        console.error("Formato inesperado recebido da API de operações:", listRes.data);
+        setOperations([]); // Zera a lista para evitar o crash do .map
+      }
+
     } catch (error) {
       console.error("Erro ao carregar operações:", error);
+      setOperations([]); // Zera a lista em caso de erro
     } finally {
       setLoading(false);
     }
@@ -213,7 +225,7 @@ export default function OperationsPage() {
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
             />
-            <Calendar size={16} className="absolute left-3 top-3 text-gray-400 pointer-events-none"/>
+            <Calendar size={14} className="absolute left-3 top-3 text-gray-400 pointer-events-none"/>
         </div>
 
         {/* Botão limpar filtros (aparece só se tiver filtro ativo) */}
@@ -244,7 +256,7 @@ export default function OperationsPage() {
           <tbody>
             {loading ? (
                <tr><td colSpan={7} className="text-center py-12 text-gray-500">Carregando operações...</td></tr>
-            ) : operations.length === 0 ? (
+            ) : !Array.isArray(operations) || operations.length === 0 ? (
                <tr><td colSpan={7} className="text-center py-12 text-gray-500">Nenhuma operação encontrada para os filtros selecionados.</td></tr>
             ) : (
               operations.map((op) => (
