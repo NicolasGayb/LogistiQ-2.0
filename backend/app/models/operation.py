@@ -1,13 +1,13 @@
 # Importações padrão
 import uuid
-from sqlalchemy import String, DateTime, Enum, ForeignKey
+from sqlalchemy import Numeric, String, DateTime, Enum, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 # Importações internas
 from app.models.base import Base
-from app.models.enum import OperationStatus
+from app.models.enum import OperationStatus, OperationType
 
 # Definição do modelo Operation
 class Operation(Base):
@@ -37,9 +37,22 @@ class Operation(Base):
         default=uuid.uuid4
     )
 
+    operation_number: Mapped[int] = mapped_column(
+        String(20),
+        nullable=False,
+        unique=True,
+        index=True
+    )
+
     company_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("companies.id"),
         nullable=False,
+        index=True
+    )
+
+    partner_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("partners.id"),
+        nullable=True,
         index=True
     )
 
@@ -53,6 +66,18 @@ class Operation(Base):
         Enum(OperationStatus),
         nullable=False,
         default=OperationStatus.CREATED
+    )
+
+    total_value: Mapped[float] = mapped_column(
+        Numeric(10, 2),
+        nullable=True,
+        default=0.00
+    )
+
+    type: Mapped[OperationType] = mapped_column(
+        Enum(OperationType),
+        nullable=False,
+        default=OperationType.DELIVERY
     )
 
     origin: Mapped[str | None] = mapped_column(
@@ -80,6 +105,11 @@ class Operation(Base):
     )
 
     updated_by: Mapped[uuid.UUID | None] = mapped_column(
-        ForeignKey("users.id"),
+        ForeignKey("users.id", ondelete="SET NULL"),
         nullable=True
     )
+
+    partner = relationship("Partner", back_populates="operations")
+    product = relationship("Product", back_populates="operations")
+    updater = relationship("User", back_populates="updated_operations", foreign_keys=[updated_by])
+    company = relationship("Company", back_populates="operations")

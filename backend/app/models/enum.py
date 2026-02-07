@@ -81,8 +81,7 @@ class MovementType(str, Enum):
     ROLE_CHANGE = "ROLE_CHANGE"
 
 class OperationStatus(str, Enum):
-    '''
-    Define os status possíveis para uma operação
+    '''Define os status possíveis para uma operação
 
     CREATED: Operação criada
     AT_ORIGIN: Operação no local de origem
@@ -102,3 +101,16 @@ class OperationStatus(str, Enum):
     COMPLETED = "COMPLETED"
     DELIVERED = "DELIVERED"
     CANCELED = "CANCELED"
+
+class OperationType(str, Enum):
+    '''Define os tipos de operações disponíveis na aplicação
+
+    DELIVERY: Operação de entrega
+    PICKUP: Operação de coleta
+    TRANSFER: Operação de transferência entre locais
+    RETURN: Operação de devolução
+    '''
+    DELIVERY = "DELIVERY"
+    PICKUP = "PICKUP"
+    TRANSFER = "TRANSFER"
+    RETURN = "RETURN"

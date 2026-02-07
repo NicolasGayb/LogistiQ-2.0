@@ -76,6 +76,8 @@ class Product(Base):
 
     updater = relationship("User", foreign_keys=[updated_by])
 
+    operations = relationship("Operation", back_populates="product")
+
     @property
     def company_name(self):
         '''Retorna o nome da empresa proprietária do produto.'''

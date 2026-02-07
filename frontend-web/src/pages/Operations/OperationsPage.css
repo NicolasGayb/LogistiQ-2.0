@@ -1,0 +1,238 @@
+/* Container Principal */
+.ops-container {
+  padding: 2rem;
+  font-family: 'Manrope', sans-serif; /* Ou sua fonte padrão */
+  color: #111827;
+  max-width: 1600px;
+  margin: 0 auto;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Header */
+.ops-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.ops-title h1 {
+  font-size: 1.875rem;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.ops-title p {
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.btn-new-op {
+  background-color: #16a34a; /* Green 600 */
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px -1px rgba(22, 163, 74, 0.2);
+}
+
+.btn-new-op:hover {
+  background-color: #15803d; /* Green 700 */
+  transform: translateY(-1px);
+}
+
+/* KPI Grid (Cards do Topo) */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.kpi-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  transition: transform 0.2s;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+.kpi-icon {
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kpi-content h3 {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+  margin: 0 0 0.5rem 0;
+}
+
+.kpi-content .kpi-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #111827;
+  line-height: 1;
+}
+
+/* Filtros */
+.filters-bar {
+  background: white;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #374151;
+  margin-right: 0.5rem;
+}
+
+.filter-select, .filter-input {
+  padding: 0.6rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #374151;
+  background-color: #fff;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.filter-select:focus, .filter-input:focus {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.1);
+}
+
+/* Tabela */
+.table-wrapper {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden; /* Arredonda os cantos da tabela */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+.ops-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ops-table th {
+  background: #f9fafb;
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.ops-table td {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 0.95rem;
+  color: #1f2937;
+  vertical-align: middle;
+}
+
+.ops-table tr:last-child td {
+  border-bottom: none;
+}
+
+.ops-table tr:hover {
+  background-color: #f9fafb;
+}
+
+/* Elementos da Tabela */
+.op-number {
+  font-family: 'JetBrains Mono', monospace; /* Fonte monoespaçada fica legal para códigos */
+  font-weight: 600;
+  color: #374151;
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+/* Tipos */
+.type-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.type-inbound { color: #16a34a; }
+.type-outbound { color: #dc2626; }
+
+/* SLA */
+.sla-container {
+  display: flex;
+  flex-direction: column;
+}
+.sla-date {
+  font-weight: 500;
+  color: #111827;
+}
+.sla-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-top: 2px;
+}
+.sla-late { color: #dc2626; }
+.sla-ok { color: #059669; }
+
+/* Botão de Ação na Linha */
+.btn-icon {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+.btn-icon:hover {
+  color: #111827;
+  background-color: #f3f4f6;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

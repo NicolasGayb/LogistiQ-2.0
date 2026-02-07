@@ -45,3 +45,5 @@ class Company(Base):
     products = relationship("Product", back_populates="company", cascade="all, delete-orphan")
 
     users = relationship("User", back_populates="company")
+
+    operations = relationship("Operation", back_populates="company", cascade="all, delete-orphan")

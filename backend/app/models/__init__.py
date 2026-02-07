@@ -6,3 +6,5 @@ from app.models.product import Product
 from app.models.enum import UserRole
 from app.models.operation import Operation
 from app.models.movement import Movement
+from app.models.partner import Partner
+from app.models.system_setting import SystemSetting

@@ -12,12 +12,14 @@ export const menuByRole: Record<UserRole, MenuItem[]> = {
         { label: 'Usuários', path: '/users' },
         { label: 'Empresas', path: '/companies' },
         { label: 'Produtos', path: '/products' },
+        { label: 'Operações', path: '/operations' },
         { label: 'Configurações', path: '/settings' },
         { label: 'Configurações de Sistema', path: '/system-settings' },
     ],
     ADMIN: [
         { label: 'Dashboard', path: '/dashboard' },
         { label: 'Relatórios', path: '/reports' },
+        { label: 'Operações', path: '/operations' },
         { label: 'Produtos', path: '/products' },
         { label: 'Usuários', path: '/users' },
         { label: 'Configurações', path: '/settings' },
@@ -25,10 +27,13 @@ export const menuByRole: Record<UserRole, MenuItem[]> = {
     MANAGER: [
         { label: 'Dashboard', path: '/dashboard' },
         { label: 'Relatórios', path: '/reports' },
+        { label: 'Operações', path: '/operations' },
         { label: 'Produtos', path: '/products' },
     ],
     USER: [
         { label: 'Dashboard', path: '/dashboard' },
+        { label: 'Relatórios', path: '/reports' },
+        { label: 'Operações', path: '/operations' },
         { label: 'Produtos', path: '/products' },
     ],
 };

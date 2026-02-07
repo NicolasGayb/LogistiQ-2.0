@@ -4,6 +4,7 @@ import { ProtectedRoute } from './ProtectedRoute';
 
 import Dashboard from '../pages/Dashboard/dashboards/UserDashboard';
 import { SettingsPage } from '../pages/Settings/SettingsPage';
+import OperationsPage from '../pages/Operations/OperationsPage';
 
 export function UserNavigation() {
   return (
@@ -16,6 +17,7 @@ export function UserNavigation() {
         }
       >
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/operations" element={<OperationsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
 
         {/* fallback para evitar tela branca */}

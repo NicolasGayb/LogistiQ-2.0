@@ -8,6 +8,7 @@ import CompaniesPage from '../pages/Companies/CompaniesPage';
 import { SettingsPage } from '../pages/Settings/SettingsPage';
 import SystemSettings from '../pages/System/SystemSettings';
 import ProductList from '../pages/Products/ProductList';
+import OperationsPage from '../pages/Operations/OperationsPage';
 
 export function SystemAdminNavigation() {
   return (
@@ -21,6 +22,7 @@ export function SystemAdminNavigation() {
       >
         <Route path="/users" element={<UsersPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/operations" element={<OperationsPage />} />
         <Route path="/companies" element={<CompaniesPage />} />
         <Route path="/products" element={<ProductList />} />
         <Route path="/settings" element={<SettingsPage />} />

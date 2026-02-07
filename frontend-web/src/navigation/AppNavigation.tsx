@@ -5,7 +5,7 @@ import { SystemAdminNavigation } from './SystemAdminNavigation';
 import { AdminNavigation } from './AdminNavigation';
 import { ManagerNavigation } from './ManagerNavigation';
 import { UserNavigation } from './UserNavigation';
-import Forbidden from '../pages/Forbidden';
+import Forbidden from '../pages/Maintenance/Forbidden';
 
 export function AppNavigation() {
   const { user, loading, isAuthenticated } = useAuthContext();

@@ -3,6 +3,7 @@ import { useAuthContext } from '../context/AuthContext';
 import { ROLE_HIERARCHY } from '../constants/roles';
 import type { UserRole } from '../constants/roles';
 import type { ReactNode } from 'react';
+import Forbidden from '../pages/Maintenance/Forbidden'
 
 interface ProtectedRouteProps {
   children?: ReactNode;
@@ -29,7 +30,7 @@ export function ProtectedRoute({
   );
 
   if (!hasAccess) {
-    return <Navigate to="/forbidden" replace />;
+    return <Forbidden />;
   }
 
   // Se tiver filho, renderiza ele.
