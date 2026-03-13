@@ -2,8 +2,7 @@ import axios from 'axios';
 
 // Lógica para decidir quem chamar
 const baseURL =
-  import.meta.env.VITE_API_URL ??
-  'https://logistiq2-6fb648247d8f.herokuapp.com';
+  import.meta.env.VITE_API_URL  || '/api';
 console.log("API Base URL:", baseURL);
 
 const api = axios.create({
