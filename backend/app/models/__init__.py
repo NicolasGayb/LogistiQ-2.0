@@ -8,3 +8,4 @@ from app.models.operation import Operation
 from app.models.movement import Movement
 from app.models.partner import Partner
 from app.models.system_setting import SystemSetting
+from app.models.operation_item import OperationItem

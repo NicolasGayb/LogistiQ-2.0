@@ -191,3 +191,129 @@
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+.form-section-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #64748b;
+  margin: 20px 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f1f5f9;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --- WIZARD STEPPER --- */
+.wizard-steps {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  position: relative;
+  padding: 0 20px;
+}
+
+.wizard-steps::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  left: 40px;
+  right: 40px;
+  height: 2px;
+  background: #e2e8f0;
+  z-index: 0;
+}
+
+.step-item {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: white; /* Para esconder a linha atrás */
+  padding: 0 10px;
+}
+
+.step-circle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  border: 2px solid #e2e8f0;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+}
+
+.step-item.active .step-circle {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+}
+
+.step-item.completed .step-circle {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+.step-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.step-item.active .step-label {
+  color: #0f172a;
+}
+
+/* Tabela de Itens no Modal */
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.items-table th {
+  background: #f8fafc;
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+  color: #64748b;
+}
+
+.items-table td {
+  padding: 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.remove-item-btn {
+  color: #ef4444;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.remove-item-btn:hover {
+  background: #fef2f2;
+}
+
+.stock-badge {
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}

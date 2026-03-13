@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import api from '../../api/client';
 import './OperationsPage.css';
+import { CreateOperationModal } from '../../components/Modal/CreateOperationModal';
 
 // --- TIPAGENS ---
 interface Operation {
@@ -47,6 +48,9 @@ export default function OperationsPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('');
+
+  // Estado para controle do Modal de Criação
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Busca dados ao carregar ou mudar filtros
   useEffect(() => {
@@ -145,7 +149,7 @@ export default function OperationsPage() {
           <h1>Painel de Operações</h1>
           <p>Visão geral de entradas, saídas e movimentações logísticas.</p>
         </div>
-        <button className="btn-new-op">
+        <button className="btn-new-op" onClick={() => setIsModalOpen(true)}>
           <Plus size={20} /> Nova Operação
         </button>
       </div>
@@ -318,7 +322,15 @@ export default function OperationsPage() {
             )}
           </tbody>
         </table>
-      </div>
-    </div>
-  );
+        <CreateOperationModal 
+         isOpen={isModalOpen}
+         onClose={() => setIsModalOpen(false)}
+         onSuccess={() => {
+            fetchData(); // Recarrega a lista após criar
+            // Opcional: Mostrar um toast de sucesso aqui
+         }}
+        />
+       </div>
+     </div>
+   );
 }

@@ -44,6 +44,12 @@ class Operation(Base):
         index=True
     )
 
+    reference_code: Mapped[str | None] = mapped_column(
+        String(50),
+        nullable=True,
+        index=True
+    )
+
     company_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("companies.id"),
         nullable=False,
@@ -53,12 +59,6 @@ class Operation(Base):
     partner_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("partners.id"),
         nullable=True,
-        index=True
-    )
-
-    product_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("products.id"),
-        nullable=False,
         index=True
     )
 
@@ -94,9 +94,19 @@ class Operation(Base):
         nullable=True
     )
 
+    observation: Mapped[str | None] = mapped_column(
+        String(500),
+        nullable=True
+    )
+
     created_at: Mapped[str] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now()
+    )
+
+    created_by: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True
     )
 
     updated_at: Mapped[str] = mapped_column(
@@ -110,6 +120,28 @@ class Operation(Base):
     )
 
     partner = relationship("Partner", back_populates="operations")
-    product = relationship("Product", back_populates="operations")
     updater = relationship("User", back_populates="updated_operations", foreign_keys=[updated_by])
     company = relationship("Company", back_populates="operations")
+    items = relationship("OperationItem", back_populates="operation", cascade="all, delete-orphan")
+    creator = relationship("User", back_populates="created_operations", foreign_keys=[created_by])
+    updater = relationship("User", back_populates="updated_operations", foreign_keys=[updated_by])
+
+    @property
+    def partner_name(self):
+        '''Retorna o nome do parceiro associado à operação.'''
+        return self.partner.name if self.partner else "N/A"
+
+    @property
+    def company_name(self):
+        '''Retorna o nome da empresa associada à operação.'''
+        return self.company.name if self.company else "N/A"
+
+    @property
+    def updated_by_name(self):
+        '''Retorna o nome do usuário que realizou a última atualização da operação.'''
+        return self.updater.name if self.updater else "N/A"
+
+    @property
+    def created_by_name(self):
+        '''Retorna o nome do usuário que criou a operação.'''
+        return self.creator.name if self.creator else "N/A"

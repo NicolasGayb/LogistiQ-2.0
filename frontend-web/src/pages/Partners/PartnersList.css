@@ -1,0 +1,196 @@
+/* Container Principal */
+.partners-container {
+  padding: 2rem;
+  font-family: 'Manrope', sans-serif;
+  color: #1e293b;
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Header */
+.partners-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.partners-header h1 {
+  font-size: 1.875rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.btn-primary {
+  background-color: #10b981; /* Verde LogistiQ */
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #059669;
+}
+
+/* Barra de Filtros */
+.filters-container {
+  background: white;
+  padding: 1.25rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 1.5rem;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.search-wrapper {
+  position: relative;
+  flex: 1; /* Ocupa o espaço restante */
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+.form-input-search {
+  width: 100%;
+  padding: 10px 12px 10px 40px; /* Espaço pro ícone */
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-input-search:focus {
+  border-color: #10b981;
+}
+
+.form-select-filter {
+  padding: 10px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background-color: white;
+  font-size: 0.9rem;
+  min-width: 180px;
+  outline: none;
+}
+
+/* Tabela */
+.table-container {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.partners-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.partners-table th {
+  background-color: #f8fafc;
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.partners-table td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.95rem;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.partners-table tr {
+  cursor: pointer;
+  transition: background-color 0.1s;
+}
+
+.partners-table tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Badges de Tipo (Seguindo Especificação) */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Cliente = Azul */
+.badge-customer {
+  background-color: #dbeafe; 
+  color: #1d4ed8; 
+}
+
+/* Fornecedor = Roxo */
+.badge-supplier {
+  background-color: #f3e8ff; 
+  color: #7e22ce; 
+}
+
+/* Ambos = Gradiente ou cor neutra de destaque */
+.badge-both {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+/* Ações */
+.action-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  color: #94a3b8;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+}
+
+.action-btn.delete:hover {
+  background-color: #fef2f2;
+  color: #ef4444;
+}
+
+/* Paginação */
+.pagination-controls {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem;
+  gap: 10px;
+  border-top: 1px solid #e2e8f0;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

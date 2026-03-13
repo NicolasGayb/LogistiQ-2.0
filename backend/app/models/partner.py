@@ -45,7 +45,9 @@ class Partner(Base):
 
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        onupdate=func.now()
+        default=func.now(),
+        onupdate=func.now(),
+        server_default=func.now()
     )
 
     # --- RELACIONAMENTOS ---

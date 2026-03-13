@@ -9,6 +9,7 @@ from app.models import Company, User
 from app.database import get_db
 from app.core.dependencies import require_roles
 from app.core.security import hash_password
+from app.schemas.user import UserResponse
 
 router = APIRouter(prefix="/companies", tags=["Companies"])
 
@@ -138,7 +139,7 @@ def get_my_company(
     
     return company
 
-@router.get("/me/users")
+@router.get("/me/users", response_model=list[UserResponse])
 def get_my_company_users(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles([UserRole.ADMIN, UserRole.MANAGER, UserRole.SYSTEM_ADMIN])
@@ -153,7 +154,7 @@ def get_my_company_users(
         db (Session): Sessão do banco de dados.
         current_user (User): Usuário autenticado.
     Returns:
-        list[User]: Lista de instâncias de usuários.
+        list[UserResponse]: Lista de instâncias de usuários.
     """
     query = db.query(User)
 

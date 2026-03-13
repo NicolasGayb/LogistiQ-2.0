@@ -1,4 +1,5 @@
 # Importações externas
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 # Importações internas
@@ -6,6 +7,7 @@ from app.models.operation import Operation, OperationStatus
 from app.models.movement import MovementType
 from app.services.movement_service import MovementService
 from app.domain.operation_validator import validate_status_transition, InvalidOperationTransition
+from app.models.operation_item import OperationItem
 
 
 class OperationService:
@@ -34,25 +36,47 @@ class OperationService:
         '''
         # Cria a instância da operação
         operation = Operation(
+            operation_number=self._generate_operation_number(user.company_id),
             company_id=user.company_id,
+            partner_id=data.partner_id,
             reference_code=data.reference_code,
             origin=data.origin,
             destination=data.destination,
-            status=OperationStatus.CREATED
+            type=data.type,
+            expected_delivery_date=data.expected_delivery_date,
+            observation=data.observation,
+            status=OperationStatus.CREATED,
+            created_at=func.now(),
+            updated_at=func.now(),
+            created_by=user.id,
+            total_value=sum(item.quantity * item.unit_price for item in data.items)
         )
 
         # Adiciona a operação ao banco de dados
         self.db.add(operation)
+        self.db.flush()  # Gera o ID da operação para associar os itens
+
+        for item in data.items:
+            new_item = OperationItem(
+                operation_id=operation.id,
+                product_id=item.product_id,
+                quantity=item.quantity,
+                unit_price=item.unit_price,
+                subtotal=item.quantity * item.unit_price
+            )
+            self.db.add(new_item)
+
         self.db.commit()
         self.db.refresh(operation)
 
         # Registra a movimentação de criação da operação
-        self.movement_service.create(
+        self.movement_service.register_operation_created(
             operation_id=operation.id,
             company_id=user.company_id,
-            type=MovementType.OPERATION_CREATED,
+            partner_id=data.partner_id,
             new_status=OperationStatus.CREATED,
-            description="Operação criada",
+            description=f"Operação {operation.operation_number} criada",
+            ip_address=None,
             user_id=user.id
         )
 
@@ -86,10 +110,10 @@ class OperationService:
         self.db.commit()
 
         # Registra a movimentação de alteração de status
-        self.movement_service.create(
+        self.movement_service.register_status_changed(
             operation_id=operation.id,
             company_id=operation.company_id,
-            type=MovementType.STATUS_CHANGED,
+            entity_type=MovementType.STATUS_CHANGED,
             previous_status=old_status,
             new_status=new_status,
             description=f"Status alterado de {old_status} para {new_status}",
@@ -97,3 +121,24 @@ class OperationService:
         )
 
         return operation
+    
+    # --- Definição de métodos ---
+    
+    def _generate_operation_number(self, company_id: str) -> str:
+        ''' Gera um número único para a operação dentro da empresa.
+        
+        :param company_id: ID da empresa.
+        :return: Número único da operação.
+        '''
+        last_operation = (
+            self.db.query(Operation)
+            .filter(Operation.company_id == company_id)
+            .order_by(Operation.operation_number.desc())
+            .first()
+        )
+        if last_operation:
+            last_number = int(last_operation.operation_number)
+            new_number = last_number + 1
+        else:
+            new_number = 1
+        return str(new_number).zfill(6)

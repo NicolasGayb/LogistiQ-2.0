@@ -98,4 +98,5 @@ class User(Base):
     theme_preference: Mapped[str] = mapped_column(String(50), default="auto", nullable=False)
 
     company = relationship("Company", back_populates="users")
-    updated_operations = relationship("Operation", back_populates="updater")
+    updated_operations = relationship("Operation", foreign_keys="[Operation.updated_by]", back_populates="updater")
+    created_operations = relationship("Operation", foreign_keys="[Operation.created_by]", back_populates="creator")

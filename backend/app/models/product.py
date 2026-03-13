@@ -76,7 +76,7 @@ class Product(Base):
 
     updater = relationship("User", foreign_keys=[updated_by])
 
-    operations = relationship("Operation", back_populates="product")
+    operation_items = relationship("OperationItem", back_populates="product")
 
     @property
     def company_name(self):

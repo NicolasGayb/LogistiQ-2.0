@@ -25,6 +25,7 @@ class MovementEntityType(str, Enum):
     PRODUCT = "PRODUCT"
     USER = "USER"
     COMPANY = "COMPANY"
+    PARTNER = "PARTNER"
 
 class MovementType(str, Enum):
     '''Define os tipos de movimentos possíveis na aplicação
