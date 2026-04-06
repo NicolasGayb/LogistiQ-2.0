@@ -232,6 +232,18 @@
   background-color: #f3f4f6;
 }
 
+.btn-icon button {
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.btn-icon button:hover {
+  color: #111827;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }

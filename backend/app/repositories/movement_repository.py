@@ -27,6 +27,7 @@ class MovementRepository:
         new_status: OperationStatus | None = None,
         description: str | None = None,
         created_by: UUID | None = None,
+        ip_address: str | None = None
     ) -> Movement:
         '''Cria uma nova movimentação no banco de dados.
         
@@ -40,6 +41,7 @@ class MovementRepository:
             - new_status: Novo status da entidade (opcional).
             - description: Descrição da movimentação (opcional).
             - created_by: ID do usuário que criou a movimentação (opcional).
+            - ip_address: Endereço IP do usuário que criou a movimentação (opcional).
         '''
         movement = Movement(
             entity_type=entity_type,
@@ -50,6 +52,7 @@ class MovementRepository:
             new_status=new_status,
             description=description,
             created_by=created_by,
+            ip_address=ip_address,
         )
 
         db.add(movement)

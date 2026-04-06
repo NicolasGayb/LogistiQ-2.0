@@ -194,14 +194,12 @@ def update_operation_status(
     Retorna:
     - A operação atualizada.
     '''
-    operation = (
-        db.query(Operation)
-        .filter(
-            Operation.id == operation_id,
-            Operation.company_id == current_user.company_id
-        )
-        .first()
-    )
+    operation = db.query(Operation).filter(Operation.id == operation_id)
+
+    if current_user.role != "SYSTEM_ADMIN":
+        operation = operation.filter(Operation.company_id == current_user.company_id)
+
+    operation = operation.first()
 
     if not operation:
         raise HTTPException(status_code=404, detail="Operation not found")

@@ -73,11 +73,8 @@ class OperationService:
         self.movement_service.register_operation_created(
             operation_id=operation.id,
             company_id=user.company_id,
-            partner_id=data.partner_id,
-            new_status=OperationStatus.CREATED,
-            description=f"Operação {operation.operation_number} criada",
             ip_address=None,
-            user_id=user.id
+            created_by=user.id
         )
 
         return operation
@@ -107,18 +104,20 @@ class OperationService:
 
         # Atualiza o status da operação
         operation.status = new_status
-        self.db.commit()
-
+        
         # Registra a movimentação de alteração de status
-        self.movement_service.register_status_changed(
+        self.movement_service.register_status_change(
+            db=self.db,
             operation_id=operation.id,
             company_id=operation.company_id,
-            entity_type=MovementType.STATUS_CHANGED,
             previous_status=old_status,
             new_status=new_status,
-            description=f"Status alterado de {old_status} para {new_status}",
-            user_id=user.id
+            created_by=user.id,
+            ip_address=None
         )
+
+        self.db.commit()
+        self.db.refresh(operation)
 
         return operation
     

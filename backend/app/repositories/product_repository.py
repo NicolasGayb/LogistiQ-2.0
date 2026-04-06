@@ -28,7 +28,8 @@ class ProductRepository:
         price: float,
         company_id: uuid.UUID,
         created_by: uuid.UUID | None = None,
-        created_at: datetime | None = None
+        created_at: datetime | None = None,
+        ip_address: str | None = None
     ) -> Product:
         '''Cria um novo produto no banco de dados.
 
@@ -49,7 +50,8 @@ class ProductRepository:
             price=price,
             company_id=company_id,
             created_by=created_by,
-            created_at=created_at or datetime.now(timezone.utc)
+            created_at=created_at or datetime.now(timezone.utc),
+            ip_address=ip_address,
         )
 
         db.add(product)

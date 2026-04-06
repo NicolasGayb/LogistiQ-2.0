@@ -39,23 +39,46 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }
   CANCELED:    { label: 'Cancelado',     color: '#991b1b', bg: '#fee2e2' }, // Red
 };
 
+// --- FLUXO DE STATUS (para controle de transições válidas) ---
+const STATUS_FLOW: Record<string, string[]> = {
+  CREATED: ["AT_ORIGIN", "CANCELED"],
+  AT_ORIGIN: ["LOADED", "CANCELED"],
+  LOADED: ["IN_TRANSIT"],
+  IN_TRANSIT: ["AT_HUB", "DELIVERED"],
+  AT_HUB: ["UNLOADED"],
+  UNLOADED: ["DELIVERED"],
+  DELIVERED: ["COMPLETED"],
+  COMPLETED: [],
+  CANCELED: []
+};
+
 export default function OperationsPage() {
   const [operations, setOperations] = useState<Operation[]>([]);
   const [kpis, setKpis] = useState<KPI>({ pending: 0, late: 0, completed_today: 0 });
   const [loading, setLoading] = useState(true);
+
+  // Estado para controle de qual menu de ações está aberto
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   // Estados de Filtro
   const [statusFilter, setStatusFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('');
 
+  // Estado para controle do Modal de Detalhes
+  const [selectedOperation, setSelectedOperation] = useState<Operation | null>(null);
+  const [newStatus, setNewStatus] = useState('');
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+
   // Estado para controle do Modal de Criação
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const allowed = STATUS_FLOW[selectedOperation?.status] || [];
 
   // Busca dados ao carregar ou mudar filtros
   useEffect(() => {
     fetchData();
-  }, [statusFilter, typeFilter, dateFilter]);
+  }, [statusFilter, typeFilter, dateFilter, isModalOpen]); // Recarrega ao fechar modal para atualizar lista
 
   const fetchData = async () => {
     setLoading(true);
@@ -139,6 +162,80 @@ export default function OperationsPage() {
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleDateString('pt-BR');
+  };
+
+  // --- AÇÕES (placeholders) ---
+  const handleEdit = (op: Operation) => {
+    setSelectedOperation(op);
+    setIsModalOpen(true); // Reutiliza o modal para edição
+    setOpenMenuId(null); // Fecha o menu de ações
+  };
+
+  const handleStatus = (op: Operation) => {
+    setSelectedOperation(op);
+    setNewStatus(allowed[0] || op.status); // Preenche com o primeiro status permitido
+    setIsStatusModalOpen(true);
+    setOpenMenuId(null); // Fecha o menu de ações
+  };
+
+  const handleSaveStatus = async () => {
+    try {
+      const res = await api.patch(
+        `/operations/${selectedOperation.id}/status`,
+        { status: newStatus }
+      );
+
+      console.log(
+        `Status da operação ${selectedOperation.operation_number} atualizado para ${newStatus}`
+      );
+      console.log("PATCH:", res.data);
+
+      // 🔥 Atualização OTIMISTA (instantânea)
+      setOperations((prev) =>
+        prev.map((op) =>
+          op.id === selectedOperation.id
+            ? { ...op, status: newStatus }
+            : op
+        )
+      );
+
+      console.log("selectedOperation:", selectedOperation);
+      console.log("newStatus:", newStatus);
+
+      // Atualiza item selecionado
+      setSelectedOperation((prev) =>
+        prev ? { ...prev, status: newStatus } : prev
+      );
+
+      // 🔄 Sincroniza com backend (garantia)
+      await fetchData();
+
+      setIsStatusModalOpen(false);
+      setOpenMenuId(null);
+
+    } catch (err: any) {
+      console.error("Erro ao atualizar status", err);
+      console.error("DETALHE:", err.response?.data);
+    }
+  };
+  const handleView = (op: Operation) => {
+    setSelectedOperation(op);
+    setIsModalOpen(true);
+    setOpenMenuId(null); // Fecha o menu de ações
+  };
+
+  const handleCancel = async (op: Operation) => {
+    setOpenMenuId(null); // Fecha o menu de ações
+    if (window.confirm(`Tem certeza que deseja cancelar a operação ${op.operation_number}?`)) {
+      try {
+        await api.post(`/operations/${op.id}/cancel`);
+        console.log("Operação cancelada:", op);
+        fetchData(); // Recarrega a lista após cancelar
+      } catch (error) {
+        console.error("Erro ao cancelar operação:", error);
+        // Opcional: Mostrar um toast de erro aqui
+      }
+    }
   };
 
   return (
@@ -313,9 +410,35 @@ export default function OperationsPage() {
                   
                   {/* Ações */}
                   <td className="text-right">
-                    <button className="btn-icon" title="Ver Detalhes">
-                      <MoreVertical size={18} />
-                    </button>
+                    <div className="relative">
+                      <button 
+                        className="action-btn" 
+                        onClick={() => setOpenMenuId(openMenuId === op.id ? null : op.id)}
+                      >
+                        <MoreVertical size={18} />
+                      </button>
+
+                      {openMenuId === op.id && (
+                        <div className="action-menu">
+                          <button onClick={(e) => {
+                            e.stopPropagation();
+                            handleView(op);
+                          }}>👁️ Ver detalhes</button>
+                          <button onClick={(e) => {
+                            e.stopPropagation();
+                            handleEdit(op);
+                          }}>✏️ Editar</button>
+                          <button onClick={(e) => {
+                            e.stopPropagation();
+                            handleStatus(op);
+                          }}>🚚 Atualizar status</button>
+                          <button onClick={(e) => {
+                            e.stopPropagation();
+                            handleCancel(op);
+                          }}>❌ Cancelar</button>
+                        </div>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))
@@ -330,7 +453,48 @@ export default function OperationsPage() {
             // Opcional: Mostrar um toast de sucesso aqui
          }}
         />
-       </div>
-     </div>
-   );
+        {isStatusModalOpen && selectedOperation && (
+          <div 
+            className="modal-overlay" 
+            onClick={() => setIsStatusModalOpen(false)}
+          >
+            <div 
+              className="modal-content" 
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2>
+                Atualizar Status - {selectedOperation.operation_number}
+              </h2>
+
+              <p>
+                Status atual:{" "}
+                {STATUS_CONFIG[selectedOperation.status]?.label || selectedOperation.status}
+              </p>
+
+              <p>Selecione o novo status para esta operação:</p>
+
+              <select 
+                className="w-full border border-gray-300 rounded-md p-2 mt-4"
+                value={newStatus}
+                onChange={(e) => setNewStatus(e.target.value)}
+              >
+                {(STATUS_FLOW[selectedOperation.status] || []).map((statusKey) => (
+                  <option key={statusKey} value={statusKey}>
+                    {STATUS_CONFIG[statusKey]?.label || statusKey}
+                  </option>
+                ))}
+              </select>
+
+              <button 
+                className="btn-save mt-6"
+                onClick={handleSaveStatus}
+              >
+                Salvar Status
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
