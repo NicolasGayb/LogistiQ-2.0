@@ -13,9 +13,9 @@ from app.routes import auth, products, users, companies, system_admin, operation
 # 1. Configuração do Caminho do Frontend (Dist)
 # =================================================================
 # O base_dir pega a pasta onde este arquivo main.py está (backend/app)
-base_dir = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # Sobe um nível (..) para achar a dist
-dist_dir = os.path.join(base_dir, "../dist")
+DIST_DIR = os.path.join(BASE_DIR, "../dist")
 
 # =================================================================
 # 2. Ciclo de Vida (Lifespan)
@@ -23,11 +23,15 @@ dist_dir = os.path.join(base_dir, "../dist")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: Cria as tabelas do banco
-    print("Iniciando tabelas do banco de dados...")
-    
+    print("Inicializando LogistiQ API...")
+    # DEBUG: Imprime as tabelas que serão criadas (ajuda a identificar erros de modelagem)
     print(Base.metadata.tables.keys())
+    
+    
     Base.metadata.create_all(bind=engine)
     yield
+
+    print("Encerrando LogistiQ API...")
 
 # =================================================================
 # 3. Inicialização do App
@@ -35,7 +39,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="LogistiQ 2.0 API", 
     version="2.0.0", 
-    description="API do sistema LogistiQ para gestão logística e controle por empresa.", 
+    description="Sistema SaaS para gestão logística multiempresa.", 
     lifespan=lifespan,
 
     docs_url= None if os.getenv("ENV") == "production" else "/docs",
@@ -49,7 +53,8 @@ app = FastAPI(
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://logistiq2-6fb648247d8f.herokuapp.com"
+    # Cloud Run
+    "https://backend-385153478803.southamerica-east1.run.app"
 ]
 
 app.add_middleware(
@@ -77,10 +82,10 @@ app.include_router(partner.router)
 # 6. Servindo o Frontend (React/Vite)
 # =================================================================
 
-if os.path.exists(dist_dir):
+if os.path.exists(DIST_DIR):
     # A. Monta a pasta de assets (JS, CSS, Imagens do Vite)
     # O Vite coloca tudo em dist/assets, então servimos em /assets
-    assets_dir = os.path.join(dist_dir, "assets")
+    assets_dir = os.path.join(DIST_DIR, "assets")
     if os.path.exists(assets_dir):
         app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
@@ -90,16 +95,16 @@ if os.path.exists(dist_dir):
     # Se não, entrega o index.html e deixa o React lidar com a rota.
     @app.get("/{full_path:path}")
     async def serve_react_app(full_path: str):
-        file_path = os.path.join(dist_dir, full_path)
+        file_path = os.path.join(DIST_DIR, full_path)
         
         # Se for um arquivo físico que existe, retorna ele
         if os.path.exists(file_path) and os.path.isfile(file_path):
             return FileResponse(file_path)
         
         # Caso contrário, retorna o index.html (React Router assume)
-        return FileResponse(os.path.join(dist_dir, "index.html"))
+        return FileResponse(os.path.join(DIST_DIR, "index.html"))
 else:
-    print(f"⚠️ AVISO: Pasta 'dist' não encontrada em: {dist_dir}")
+    print(f"⚠️ AVISO: Pasta 'dist' não encontrada em: {DIST_DIR}")
     print("O frontend não será carregado. Verifique se você moveu a pasta build/dist.")
 
 # =================================================================
@@ -107,4 +112,4 @@ else:
 # =================================================================
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8080)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8080, reload=True)
