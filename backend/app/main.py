@@ -101,3 +101,10 @@ if os.path.exists(dist_dir):
 else:
     print(f"⚠️ AVISO: Pasta 'dist' não encontrada em: {dist_dir}")
     print("O frontend não será carregado. Verifique se você moveu a pasta build/dist.")
+
+# =================================================================
+# 7. Roda o app (com Uvicorn)
+# =================================================================
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8080)

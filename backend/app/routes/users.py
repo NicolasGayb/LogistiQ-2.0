@@ -162,6 +162,10 @@ def auto_create_user(
         company_id=company.id
     )
 
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
     # Movimentação
     try:
         MovementService.create_manual(
@@ -178,10 +182,6 @@ def auto_create_user(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error creating movement for auto user creation: {str(e)}"
         )
-
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
 
     message = f"Usuário {new_user.email} criado com sucesso na empresa {company.name}."
     print(message)
