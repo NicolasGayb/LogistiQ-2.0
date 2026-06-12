@@ -32,8 +32,8 @@ def list_products(
     - Lista de produtos da empresa do usuário autenticado.
     '''
     if current_user.role in [UserRole.SYSTEM_ADMIN]:
-        return ProductService.list_products(db=db)
-    return ProductService.list_products(db=db, company_id=current_user.company_id)
+        return ProductService(db).list_products()
+    return ProductService(db).list_products(company_id=current_user.company_id)
 
 @router.get("/{product_id}", response_model=ProductOut)
 def get_product(
@@ -51,8 +51,8 @@ def get_product(
     - Detalhes do produto solicitado.
     '''
     try:
-        return ProductService.get_by_id(
-            db=db, product_id=product_id, company_id=current_user.company_id
+        return ProductService(db).get_by_id(
+            product_id=product_id, company_id=current_user.company_id
         )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -81,8 +81,7 @@ def create_product(
     - O produto criado.
     '''
     try:
-        new_product = ProductService.create_product(
-            db=db,
+        new_product = ProductService(db).create_product(
             company_id=current_user.company_id,
             created_by=current_user.id,
             data=product,
@@ -116,8 +115,7 @@ def update_product(
     if current_user.role == UserRole.SYSTEM_ADMIN:
         target_company_id = None  # System Admin pode atualizar qualquer produto
     try:
-        updated_product = ProductService.update_product(
-            db=db,
+        updated_product = ProductService(db).update_product(
             product_id=product_id,
             company_id=target_company_id,
             updated_by=current_user.id,
@@ -159,21 +157,19 @@ def toggle_product(
         target_company_id = None  # System Admin pode ativar/desativar qualquer produto
     try:
         # só chega aqui se tiver permissão
-        product = ProductService.get_by_id(
-            db=db, product_id=product_id, company_id=target_company_id
+        product = ProductService(db).get_by_id(
+            product_id=product_id, company_id=target_company_id
         )
 
         if product.is_active:
-            return ProductService.deactivate_product(
-                db=db,
+            return ProductService(db).deactivate_product(
                 product_id=product_id,
                 company_id=target_company_id,
                 updated_by=current_user.id,
                 ip_address=get_real_ip(request)
             )
         else:
-            return ProductService.activate_product(
-                db=db,
+            return ProductService(db).activate_product(
                 product_id=product_id,
                 company_id=target_company_id,
                 updated_by=current_user.id,
@@ -205,8 +201,7 @@ def delete_product(
     if current_user.role == UserRole.SYSTEM_ADMIN:
         target_company_id = None  # System Admin pode deletar qualquer produto
     try:
-        ProductService.delete_product(
-            db=db, 
+        ProductService(db).delete_product(
             product_id=product_id, 
             company_id=target_company_id,
             ip_address=get_real_ip(request)

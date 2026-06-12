@@ -63,8 +63,7 @@ def create_manual_movement(
     Returns:
         Movement: Instância do movimento criado.
     '''
-    return MovementService.create_manual(
-        db=db,
+    return MovementService(self.db).create_manual(
         entity_id=entity_id,
         entity_type=MovementEntityType.OPERATION,
         company_id=user.company_id,

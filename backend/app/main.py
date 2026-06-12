@@ -4,7 +4,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
-
 from app.database import engine
 from app.models.base import Base
 from app.routes import auth, products, users, companies, system_admin, operations, movements, dashboard, partner
@@ -53,8 +52,9 @@ app = FastAPI(
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    # Cloud Run
-    "https://backend-385153478803.southamerica-east1.run.app"
+    # Domínio LogistiQ
+    "https://logistiq.studio",
+    "https://www.logistiq.studio"
 ]
 
 app.add_middleware(

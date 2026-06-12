@@ -168,8 +168,7 @@ def auto_create_user(
 
     # Movimentação
     try:
-        MovementService.create_manual(
-            db=db,
+        MovementService(db).create_manual(
             entity_id=new_user.id,
             entity_type=MovementEntityType.USER,
             company_id=new_user.company_id,
@@ -238,8 +237,7 @@ def create_user(
 
     # Movimentação
     try:
-        MovementService.create_manual(
-            db=db,
+        MovementService(db).create_manual(
             entity_id=new_user.id,
             entity_type=MovementEntityType.USER,
             company_id=new_user.company_id,
@@ -303,8 +301,7 @@ def update_user(
 
     # Movimentação
     try:
-        MovementService.create_manual(
-            db=db,
+        MovementService(db).create_manual(
             entity_id=user.id,
             entity_type=MovementEntityType.USER,
             company_id=user.company_id,
@@ -362,8 +359,7 @@ def delete_user(
     try:
         db.delete(user)
         # Movimentação
-        MovementService.create_manual(
-            db=db,
+        MovementService(db).create_manual(
             entity_id=user.id,
             entity_type=MovementEntityType.USER,
             company_id=user.company_id,
@@ -422,8 +418,7 @@ def toggle_user_active_status(
 
     # Movimentação
     try:
-        MovementService.create_manual(
-            db=db,
+        MovementService(db).create_manual(
             entity_id=user.id,
             entity_type=MovementEntityType.USER,
             company_id=user.company_id,
@@ -484,8 +479,7 @@ def update_my_profile(
 
     # 3. Cria movimento de atualização de perfil
     try:
-        MovementService.create_manual(
-            db=db,
+        MovementService(db).create_manual(
             entity_id=current_user.id,
             entity_type=MovementEntityType.USER,
             company_id=current_user.company_id,
@@ -561,8 +555,7 @@ def change_my_password(
 
     # 4. Cria movimento de troca de senha
     try:
-        MovementService.create_manual(
-            db=db,
+        MovementService(db).create_manual(
             entity_id=current_user.id,
             entity_type=MovementEntityType.USER,
             company_id=current_user.company_id,
@@ -608,8 +601,7 @@ def update_my_company_settings(
 
     # Movimentação
     try:
-        MovementService.create_manual(
-            db=db,
+        MovementService(db).create_manual(
             entity_id=company.id,
             entity_type=MovementEntityType.COMPANY,
             company_id=company.id,

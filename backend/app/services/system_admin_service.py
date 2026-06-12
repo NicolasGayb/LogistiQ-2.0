@@ -33,7 +33,6 @@ def create_system_admin(
 
     # Cria o movimento de criação do usuário para auditoria
     MovementService.create_manual(
-        db=db,
         entity_id=user.id,
         entity_type=MovementEntityType.USER,
         movement_type=MovementType.CREATION,

@@ -4,7 +4,6 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
 
 # Importações locais
 from app.database import get_db
@@ -141,10 +140,13 @@ def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db
             headers={"WWW-Authenticate": "Bearer"},
         )
     
+    print("EMAIL:", form_data.username)
+    print("USER:", form_data.username, "->", user.email if user else None)
+    print("HASH:", form_data.password, "->", user.password_hash if user else None)
+
     # Registrar movimento de login
     try:
-        MovementService.create_manual(
-            db=db,
+        MovementService(db).create_manual(
             company_id=user.company_id,
             entity_type=MovementEntityType.USER,
             entity_id=user.id,
@@ -316,8 +318,7 @@ def register(
 
     # Criar movimento de criação de usuário
     try:
-        MovementService.create_manual(
-            db=db,
+        MovementService(db).create_manual(
             entity_type=MovementEntityType.USER,
             entity_id=user.id,
             company_id=company_id,
@@ -441,8 +442,7 @@ def reset_password(
 
     # Movimento de redefinição de senha
     try:
-        MovementService.create_manual(
-            db=db,
+        MovementService(db).create_manual(
             company_id=user.company_id,
             entity_type=MovementEntityType.USER,
             entity_id=user.id,
@@ -474,8 +474,7 @@ def logout(
 ):
     # Movimento de logout
     try:
-        MovementService.create_manual(
-            db=db,
+        MovementService(db).create_manual(
             company_id=current_user.company_id,
             entity_type=MovementEntityType.USER,
             entity_id=current_user.id,

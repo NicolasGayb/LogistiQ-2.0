@@ -25,7 +25,6 @@ class OperationService:
         :param db: Sessão do banco de dados.
         '''
         self.db = db
-        self.movement_service = MovementService(db)
 
     def create(self, data, user) -> Operation:
         ''' Cria uma nova operação no sistema.
@@ -70,11 +69,11 @@ class OperationService:
         self.db.refresh(operation)
 
         # Registra a movimentação de criação da operação
-        self.movement_service.register_operation_created(
+        MovementService(self.db).register_operation_created(
             operation_id=operation.id,
-            company_id=user.company_id,
-            ip_address=None,
-            created_by=user.id
+            company_id=operation.company_id,
+            created_by=user.id,
+            ip_address=None
         )
 
         return operation
@@ -106,8 +105,7 @@ class OperationService:
         operation.status = new_status
         
         # Registra a movimentação de alteração de status
-        self.movement_service.register_status_change(
-            db=self.db,
+        MovementService(self.db).register_status_change(
             operation_id=operation.id,
             company_id=operation.company_id,
             previous_status=old_status,

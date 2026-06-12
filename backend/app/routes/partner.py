@@ -121,7 +121,6 @@ def create_partner(
 
     # --- REGISTRO DE MOVIMENTO ---
     MovementService.create_manual(
-        db=db,
         company_id=partner_in.company_id,
         entity_type=MovementEntityType.PARTNER,
         entity_id=new_partner.id,
@@ -194,7 +193,6 @@ def update_partner(
 
     # --- REGISTRO DE MOVIMENTO ---
     MovementService.create_manual(
-        db=db,
         company_id=current_user.company_id,
         entity_type=MovementEntityType.PARTNER,
         entity_id=partner.id,
@@ -228,7 +226,6 @@ def toggle_partner_active(
     # --- REGISTRO DE MOVIMENTO ---
     status_str = "ativado" if partner.active else "desativado"
     MovementService.create_manual(
-        db=db,
         company_id=current_user.company_id,
         entity_type=MovementEntityType.PARTNER,
         entity_id=partner.id,
@@ -269,7 +266,6 @@ def delete_partner(
     # --- REGISTRO DE MOVIMENTO (Antes de deletar) ---
     try:
         MovementService.create_manual(
-            db=db,
             company_id=current_user.company_id,
             entity_type=MovementEntityType.PARTNER,
             entity_id=partner.id,

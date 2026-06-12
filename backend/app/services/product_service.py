@@ -22,30 +22,33 @@ class ProductService:
     - Deletar produtos
     '''
 
-    @staticmethod
-    def list_products(db: Session, company_id: UUID | None = None):
-        query = db.query(Product).options(joinedload(Product.company))
+    def __init__(self, db: Session):
+        self.db = db
+
+    # Método público para listar produtos, com opção de filtrar por empresa (para usuários comuns) ou listar todos (para System Admin)
+    def list_products(self, company_id: UUID | None = None):
+        query = self.db.query(Product).options(joinedload(Product.company))
         if company_id:
             query = query.filter(Product.company_id == company_id)
             return query.filter(Product.is_active == True).all() # Apenas ativos
         else:
             return query.all() # Retorna todos para o System Admin ver os inativos também
 
-    @staticmethod
-    def get_by_id(db: Session, product_id: UUID, company_id: UUID):
-        product = ProductService.get_product_by_id_and_company(db=db, product_id=product_id, company_id=company_id)
+    # Método público para obter produto por ID, usado nas rotas para garantir que usuários só acessem produtos da sua empresa (exceto System Admin)
+    def get_by_id(self, product_id: UUID, company_id: UUID):
+        product = self._get_product_by_id_and_company(product_id=product_id, company_id=company_id)
         
         if not product:
             raise ValueError("Produto não encontrado.")
         return product
     
-    @staticmethod
-    def get_product_by_id_and_company(
-        db: Session, 
+    # Método privado para obter produto por ID e empresa, usado internamente para garantir que usuários só acessem produtos da sua empresa (exceto System Admin)
+    def _get_product_by_id_and_company(
+        self,
         product_id: UUID, 
         company_id: UUID | None
     ):
-        query = db.query(Product).filter(Product.id == product_id)
+        query = self.db.query(Product).filter(Product.id == product_id)
 
         # Filtra por company_id se for um usuário que não é SYSTEM_ADMIN
         if company_id:
@@ -53,9 +56,8 @@ class ProductService:
 
         return query.first()
 
-    @staticmethod
     def create_product(
-        db: Session, 
+        self,
         company_id: UUID, 
         created_by: UUID, 
         data: ProductCreate, 
@@ -63,7 +65,7 @@ class ProductService:
     ):
         # Valida SKU
         if data.sku:
-            sku_exists = db.query(Product).filter(
+            sku_exists = self.db.query(Product).filter(
                 Product.sku == data.sku,
                 Product.company_id == company_id
             ).first()
@@ -81,14 +83,13 @@ class ProductService:
             created_by=created_by,
             is_active=True
         )
-        db.add(new_product)
+        self.db.add(new_product)
         try:
-            db.commit()
-            db.refresh(new_product)
+            self.db.commit()
+            self.db.refresh(new_product)
             
             # REGISTRA O MOVIMENTO (COM IP)
-            MovementService.create_manual(
-                db=db,
+            MovementService(self.db).create_manual(
                 company_id=company_id,
                 created_by=created_by,
                 entity_id=new_product.id,
@@ -99,21 +100,19 @@ class ProductService:
             )
             
         except IntegrityError:
-            db.rollback()
+            self.db.rollback()
             raise ValueError("Falha ao criar o produto.")
         return new_product
 
-    @staticmethod
     def update_product(
-        db: Session, 
+        self,
         product_id: UUID, 
         company_id: UUID | None,
         updated_by: UUID, 
         data: ProductUpdate,
         ip_address: str | None = None
     ):
-        product = ProductService.get_product_by_id_and_company(
-            db=db,
+        product = self._get_product_by_id_and_company(
             product_id=product_id,
             company_id=company_id
         )
@@ -122,7 +121,7 @@ class ProductService:
 
             target_company_id = product.company_id
 
-            sku_exists = db.query(Product).filter(
+            sku_exists = self.db.query(Product).filter(
                 Product.sku == data.sku,
                 Product.company_id == target_company_id,
                 Product.id != product_id,
@@ -140,12 +139,11 @@ class ProductService:
         product.updated_by = updated_by
         product.updated_at = func.now()
 
-        db.commit()
-        db.refresh(product)
-        
+        self.db.commit()
+        self.db.refresh(product)
+
         # Registrar movimento de atualização
-        MovementService.create_manual(
-            db=db,
+        MovementService(self.db).create_manual(
             company_id=company_id,
             created_by=updated_by,
             entity_id=product.id,
@@ -157,16 +155,14 @@ class ProductService:
         
         return product
 
-    @staticmethod
     def deactivate_product(
-        db: Session, 
+        self,
         product_id: UUID, 
         company_id: UUID | None,
         updated_by: UUID,
         ip_address: str | None = None # <--- Recebe IP
     ):
-        product = ProductService.get_product_by_id_and_company(
-            db=db,
+        product = self._get_product_by_id_and_company(
             product_id=product_id,
             company_id=company_id
         )
@@ -177,12 +173,11 @@ class ProductService:
         product.updated_by = updated_by
         product.updated_at = func.now()
 
-        db.commit()
-        db.refresh(product)
+        self.db.commit()
+        self.db.refresh(product)
 
         # REGISTRA MOVIMENTO
-        MovementService.create_manual(
-            db=db,
+        MovementService(self.db).create_manual(
             company_id=product.company_id,
             created_by=updated_by,
             entity_id=product.id,
@@ -194,16 +189,14 @@ class ProductService:
 
         return product
 
-    @staticmethod
     def activate_product(
-        db: Session, 
+        self,
         product_id: UUID, 
         company_id: UUID | None, 
         updated_by: UUID, 
         ip_address: str | None = None
     ):
-        product = ProductService.get_product_by_id_and_company(
-            db=db,
+        product = self._get_product_by_id_and_company(
             product_id=product_id,
             company_id=company_id
         )
@@ -214,12 +207,11 @@ class ProductService:
         product.updated_by = updated_by
         product.updated_at = func.now()
 
-        db.commit()
-        db.refresh(product)
+        self.db.commit()
+        self.db.refresh(product)
 
         # REGISTRA MOVIMENTO
-        MovementService.create_manual(
-            db=db,
+        MovementService(self.db).create_manual(
             company_id=product.company_id,
             created_by=updated_by,
             entity_id=product.id,
@@ -231,15 +223,13 @@ class ProductService:
 
         return product
     
-    @staticmethod
     def delete_product(
-        db: Session, 
+        self,
         product_id: UUID, 
         company_id: UUID | None,
         ip_address: str | None = None
     ):
-        product = ProductService.get_product_by_id_and_company(
-            db=db,
+        product = self._get_product_by_id_and_company(
             product_id=product_id,
             company_id=company_id
         )
@@ -247,12 +237,11 @@ class ProductService:
         if not product:
             raise ValueError("Produto não encontrado.")
         
-        db.delete(product)
-        db.commit()
+        self.db.delete(product)
+        self.db.commit()
 
         # REGISTRA MOVIMENTO
-        MovementService.create_manual(
-            db=db,
+        MovementService(self.db).create_manual(
             company_id=product.company_id,
             created_by=None,  # Sistema
             entity_id=product.id,
@@ -262,4 +251,4 @@ class ProductService:
             ip_address=ip_address
         )
 
-        return alert(f"Produto {product.name} deletado com sucesso.")
+        return f"Produto {product.name} deletado com sucesso."

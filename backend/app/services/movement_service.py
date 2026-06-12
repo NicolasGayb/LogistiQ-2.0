@@ -1,5 +1,4 @@
 # Importações externas
-from http.client import HTTPException
 from fastapi import HTTPException, status
 from uuid import UUID
 from sqlalchemy.orm import Session
@@ -31,40 +30,38 @@ class MovementService:
         '''
         self.db = db
 
-    @staticmethod
     def register_operation_created(
-        db: Session,
+        self,
         *,
-        operation_id: UUID,
+        operation: Operation,
         company_id: UUID,
         created_by: UUID | None = None,
         ip_address: str | None = None
     ):
         ''' Registra a criação de uma nova operação. 
         
-        :param db: Sessão do banco de dados.
-        :param operation_id: ID da operação criada.
+        :param self: Instância do serviço de movimentação.
+        :param operation: Instância da operação criada.
         :param company_id: ID da empresa associada.
         :param created_by: ID do usuário que criou a operação.
         :return: Instância da movimentação criada.
         '''
         # Cria a movimentação de operação criada
         return MovementRepository.create(
-            db=db,
+            db=self.db,
             company_id=company_id,
             entity_type=MovementEntityType.OPERATION,
-            entity_id=operation_id,
+            entity_id=operation.id,
             movement_type=MovementType.OPERATION_CREATED,
             description="Operação criada",
             created_by=created_by,
             ip_address=ip_address,
         )
 
-    @staticmethod
     def register_status_change(
-        db: Session,
+        self,
         *,
-        operation_id: UUID,
+        operation: Operation,
         company_id: UUID,
         previous_status: OperationStatus,
         new_status: OperationStatus,
@@ -73,8 +70,8 @@ class MovementService:
     ):
         ''' Registra a alteração de status de uma operação. 
         
-        :param db: Sessão do banco de dados.
-        :param operation_id: ID da operação.
+        :param self: Instância do serviço de movimentação.
+        :param operation: Instância da operação.
         :param company_id: ID da empresa associada.
         :param previous_status: Status anterior da operação.
         :param new_status: Novo status da operação.
@@ -83,10 +80,10 @@ class MovementService:
         '''
         # Cria a movimentação de alteração de status
         return MovementRepository.create(
-            db=db,
+            db=self.db,
             company_id=company_id,
             entity_type=MovementEntityType.OPERATION,
-            entity_id=operation_id,
+            entity_id=operation.id,
             movement_type=MovementType.STATUS_CHANGED,
             previous_status=previous_status,
             new_status=new_status,
@@ -95,9 +92,8 @@ class MovementService:
             ip_address=ip_address,
         )
 
-    @staticmethod
     def register_event(
-        db: Session,
+        self,
         *,
         entity_type: MovementEntityType,
         entity_id: UUID,
@@ -109,7 +105,7 @@ class MovementService:
     ):
         ''' Registra um evento genérico de movimentação. 
         
-        :param db: Sessão do banco de dados.
+        :param self: Instância do serviço de movimentação.
         :param entity_type: Tipo da entidade associada à movimentação.
         :param entity_id: ID da entidade associada.
         :param company_id: ID da empresa associada.
@@ -120,7 +116,7 @@ class MovementService:
         '''
         # Cria a movimentação genérica
         return MovementRepository.create(
-            db=db,
+            db=self.db,
             company_id=company_id,
             entity_type=entity_type,
             entity_id=entity_id,
@@ -130,9 +126,8 @@ class MovementService:
             ip_address=ip_address,
         )
     
-    @staticmethod
     def _validate_entity_exists(
-        db: Session,
+        self,
         *,
         entity_id: UUID,
         entity_type: MovementEntityType,
@@ -140,7 +135,7 @@ class MovementService:
     ):
         ''' Valida se a entidade existe no banco de dados.
         
-        :param db: Sessão do banco de dados.
+        :param self: Instância do serviço de movimentação.
         :param entity_id: ID da entidade.
         :param entity_type: Tipo da entidade.
         :param company_id: ID da empresa associada.
@@ -149,7 +144,7 @@ class MovementService:
         # Validação para o tipo OPERATION
         if entity_type == MovementEntityType.OPERATION:
             exists = (
-                db.query(Operation)
+                self.db.query(Operation)
                 .filter(
                     Operation.id == entity_id,
                     Operation.company_id == company_id
@@ -163,10 +158,9 @@ class MovementService:
                     detail="Operation not found"
                 )
 
-    @staticmethod
     def create_manual(
+        self,
         *,
-        db: Session,
         entity_id: UUID,
         entity_type: MovementEntityType,
         company_id: UUID,
@@ -177,7 +171,7 @@ class MovementService:
     ):
         ''' Cria uma movimentação manualmente, validando a existência da entidade.
 
-        :param db: Sessão do banco de dados.
+        :param self: Instância do serviço de movimentação.
         :param entity_id: ID da entidade associada.
         :param entity_type: Tipo da entidade associada.
         :param company_id: ID da empresa associada.
@@ -187,8 +181,7 @@ class MovementService:
         :return: Instância da movimentação criada.
         '''
         # Regra de domínio - validação da existência da entidade
-        MovementService._validate_entity_exists(
-            db,
+        self._validate_entity_exists(
             entity_id=entity_id,
             entity_type=entity_type,
             company_id=company_id
@@ -206,8 +199,8 @@ class MovementService:
         )
 
         # Persiste a movimentação no banco de dados
-        db.add(movement)
-        db.commit()
-        db.refresh(movement)
+        self.db.add(movement)
+        self.db.commit()
+        self.db.refresh(movement)
 
         return movement
